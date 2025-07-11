@@ -1,2 +1,2 @@
 # yandex-disk-cpp-client
-Modern C++ client for Yandex.Disk REST API. Simple, lightweight, and header-only library for integrating Yandex.Disk cloud storage into C++ projects.
+yandex-disk-cpp-client is a modern, lightweight C++ library for seamless integration with Yandex.Disk cloud storage via REST API. Supports file upload/download, public sharing, directory management, and quota info. Ideal for bots, desktop, and server C++ applications. Minimal dependencies, easy to use, and well-documented.
