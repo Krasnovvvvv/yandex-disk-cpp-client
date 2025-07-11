@@ -37,5 +37,28 @@
 *.out
 *.app
 
-# debug information files
+# Debug information files
 *.dwo
+
+# Temporary files
+*.tmp
+*.log
+*.swp
+
+# Database files
+*.db
+
+# System files
+.DS_Store
+Thumbs.db
+
+# CLion project files
+.idea/
+cmake-build-*/
+
+# CMake build system files
+build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
