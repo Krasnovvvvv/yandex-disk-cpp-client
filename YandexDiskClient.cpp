@@ -115,6 +115,33 @@ std::string YandexDiskClient::formatResourceList(const nlohmann::json& json) {
     return oss.str();
 }
 
+std::string YandexDiskClient::getUploadUrl(const std::string& upload_disk_path) {
+    CURL* curl = curl_easy_init();
+    if (!curl) throw std::runtime_error("curl_easy_init() failed");
+    char* escaped = curl_easy_escape(curl, upload_disk_path.c_str(), 0);
+    if (!escaped) {
+        curl_easy_cleanup(curl);
+        throw std::runtime_error("curl_easy_escape() failed");
+    }
+
+    std::string url = "https://cloud-api.yandex.net/v1/disk/resources/upload?path=";
+    url += escaped;
+    url += "&overwrite=true";
+
+    curl_free(escaped);
+    curl_easy_cleanup(curl);
+
+    std::string resp = performRequest(url);
+    auto json = nlohmann::json::parse(resp);
+    if (json.contains("href") && !json["href"].is_null())
+        return json["href"].get<std::string>();
+    else if (json.contains("error"))
+        throw std::runtime_error("Yandex.Disk API error: " + json["error"].get<std::string>());
+    else
+        throw std::runtime_error("Upload URL not found in API response");
+}
+
+
 
 
 
