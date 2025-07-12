@@ -33,41 +33,21 @@ std::string YandexDiskClient::performRequest(const std::string& url, const std::
 }
 
 nlohmann::json YandexDiskClient::getResourceList(const std::string& path) {
-    CURL* curl = curl_easy_init();
-    if (!curl) throw std::runtime_error("curl_easy_init() failed");
-
-    char* escaped = curl_easy_escape(curl, path.c_str(), 0);
-    if (!escaped) {
-        curl_easy_cleanup(curl);
-        throw std::runtime_error("curl_easy_escape() failed");
-    }
-
-    std::string url = "https://cloud-api.yandex.net/v1/disk/resources?path=";
-    url += escaped;
-
-    curl_free(escaped);
-    curl_easy_cleanup(curl);
-
+    std::string url = buildUrl(
+            "https://cloud-api.yandex.net/v1/disk/resources?path=",
+            path,
+            ""
+    );
     std::string resp = performRequest(url);
     return nlohmann::json::parse(resp);
 }
 
 bool YandexDiskClient::publish(const std::string& path) {
-    CURL* curl = curl_easy_init();
-    if (!curl) throw std::runtime_error("curl_easy_init() failed");
-
-    char* escaped = curl_easy_escape(curl, path.c_str(), 0);
-    if (!escaped) {
-        curl_easy_cleanup(curl);
-        throw std::runtime_error("curl_easy_escape() failed");
-    }
-
-    std::string url = "https://cloud-api.yandex.net/v1/disk/resources/publish?path=";
-    url += escaped;
-
-    curl_free(escaped);
-    curl_easy_cleanup(curl);
-
+    std::string url = buildUrl(
+            "https://cloud-api.yandex.net/v1/disk/resources/publish?path=",
+            path,
+            ""
+    );
     performRequest(url, "PUT");
     return true;
 }
@@ -76,22 +56,10 @@ std::string YandexDiskClient::getLinkByKey(
         const std::string& path,
         const std::string& endpoint,
         const std::string& key,
-        const std::string& extraParams = "",
-        const std::string& errorMsg = "Link not found for the given key"
+        const std::string& extraParams,
+        const std::string& errorMsg
 ) {
-    CURL* curl = curl_easy_init();
-    if (!curl) throw std::runtime_error("curl_easy_init() failed");
-
-    char* escaped = curl_easy_escape(curl, path.c_str(), 0);
-    if (!escaped) {
-        curl_easy_cleanup(curl);
-        throw std::runtime_error("curl_easy_escape() failed");
-    }
-
-    std::string url = endpoint + escaped + extraParams;
-    curl_free(escaped);
-    curl_easy_cleanup(curl);
-
+    std::string url = buildUrl(endpoint, path, extraParams);
     std::string resp = performRequest(url);
     auto json = nlohmann::json::parse(resp);
 
@@ -102,7 +70,6 @@ std::string YandexDiskClient::getLinkByKey(
     else
         throw std::runtime_error(errorMsg);
 }
-
 
 std::string YandexDiskClient::getPublicDownloadLink(const std::string& path) {
     return getLinkByKey(
@@ -149,6 +116,27 @@ std::string YandexDiskClient::getDownloadUrl(const std::string& download_disk_pa
             "",
             "Download URL not found in API response."
     );
+}
+
+std::string YandexDiskClient::buildUrl(
+        const std::string& endpoint,
+        const std::string& path,
+        const std::string& extraParams
+) {
+    CURL* curl = curl_easy_init();
+    if (!curl) throw std::runtime_error("curl_easy_init() failed");
+
+    char* escaped = curl_easy_escape(curl, path.c_str(), 0);
+    if (!escaped) {
+        curl_easy_cleanup(curl);
+        throw std::runtime_error("curl_easy_escape() failed");
+    }
+
+    std::string url = endpoint + escaped + extraParams;
+    curl_free(escaped);
+    curl_easy_cleanup(curl);
+
+    return url;
 }
 
 

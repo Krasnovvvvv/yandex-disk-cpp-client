@@ -31,6 +31,12 @@ private:
             const std::string& errorMsg
     );
 
+    std::string buildUrl(
+            const std::string& endpoint,
+            const std::string& path,
+            const std::string& extraParams
+    );
+
 
 };
 
