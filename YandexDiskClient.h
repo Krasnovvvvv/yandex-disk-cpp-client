@@ -5,19 +5,48 @@
 #pragma once
 #include <string>
 #include <nlohmann/json.hpp>
+#include <filesystem>
 
 class YandexDiskClient {
 public:
-    explicit YandexDiskClient(const std::string& oauth_token);
+    explicit YandexDiskClient(const std::string& );
 
     nlohmann::json getResourceList(const std::string& path ="/");
-    bool publish(const std::string& path);
-    std::string getPublicDownloadLink(const std::string& path);
-    std::string formatResourceList(const nlohmann::json& json);
+    std::string formatResourceList(const nlohmann::json& );
+    bool publish(const std::string& );
+    std::string getPublicDownloadLink(const std::string& );
+    bool uploadFile(const std::string& , const std::string& );
+    bool downloadFile(const std::string& , const std::string& );
+
 
 private:
     std::string token;
-    std::string performRequest(const std::string& url, const std::string& method = "GET");
+    std::string performRequest(const std::string& , const std::string& method = "GET");
+    std::string getUploadUrl(const std::string& );
+    std::string getDownloadUrl(const std::string& );
+
+    std::string getLinkByKey(
+            const std::string& ,
+            const std::string& ,
+            const std::string& ,
+            const std::string& ,
+            const std::string&
+    );
+
+    std::string buildUrl(
+            const std::string& ,
+            const std::string& ,
+            const std::string&
+    );
+
+    std::string makeUploadDiskPath(
+            const std::string& ,
+            const std::string& );
+
+    std::string makeLocalDownloadPath(
+            const std::string& ,
+            const std::string& );
+
 
 };
 
