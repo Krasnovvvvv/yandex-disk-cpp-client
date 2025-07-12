@@ -2,6 +2,7 @@
 #include <curl/curl.h>
 #include <stdexcept>
 #include <filesystem>
+#include <iostream>
 
 size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp) {
     ((std::string*)userp)->append((char*)contents, size * nmemb);
@@ -237,10 +238,15 @@ bool YandexDiskClient::downloadFile(
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, file);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, nullptr);
+    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+
 
     CURLcode res = curl_easy_perform(curl);
 
     fclose(file);
+    long http_code = 0;
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+    std::cout << "HTTP code: " << http_code << std::endl;
     curl_easy_cleanup(curl);
 
     if (res != CURLE_OK) {

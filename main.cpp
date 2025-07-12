@@ -12,6 +12,7 @@ int main() {
 
     auto files = yandex.getResourceList("/");
     std::cout <<yandex.formatResourceList(files) << std::endl;
+    yandex.downloadFile("/Физика/Капельян.pdf",R"(C:\Users\37529\Desktop)");
     return 0;
 }
 
