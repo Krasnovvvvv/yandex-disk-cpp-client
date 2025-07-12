@@ -16,7 +16,7 @@ public:
     bool publish(const std::string& );
     std::string getPublicDownloadLink(const std::string& );
     bool uploadFile(const std::string& , const std::string& );
-    bool downloadFile(const std::string& download_disk_path, const std::string& local_path);
+    bool downloadFile(const std::string& , const std::string& );
 
 
 private:

@@ -171,8 +171,9 @@ std::string YandexDiskClient::makeLocalDownloadPath(
     return (localDir / diskFile.filename()).string();
 }
 
-bool YandexDiskClient::uploadFile(const std::string& disk_dir,
-                                  const std::string& local_path) {
+bool YandexDiskClient::uploadFile(
+        const std::string& disk_dir,
+        const std::string& local_path) {
 
     std::string upload_disk_path = makeUploadDiskPath(disk_dir, local_path);
 
@@ -212,6 +213,43 @@ bool YandexDiskClient::uploadFile(const std::string& disk_dir,
     return true;
 }
 
+bool YandexDiskClient::downloadFile(
+        const std::string& download_disk_path,
+        const std::string& local_dir) {
+
+    std::string local_path = makeLocalDownloadPath(
+            download_disk_path,
+            local_dir);
+
+    std::string url = getDownloadUrl(download_disk_path);
+
+    FILE* file = fopen(local_path.c_str(), "wb");
+    if (!file) {
+        throw std::runtime_error("Failed to create a file: " + local_path);
+    }
+
+    CURL* curl = curl_easy_init();
+    if (!curl) {
+        fclose(file);
+        throw std::runtime_error("curl_easy_init() failed");
+    }
+
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, file);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, nullptr);
+
+    CURLcode res = curl_easy_perform(curl);
+
+    fclose(file);
+    curl_easy_cleanup(curl);
+
+    if (res != CURLE_OK) {
+        throw std::runtime_error("File download error: " +
+        std::string(curl_easy_strerror(res)));
+    }
+
+    return true;
+}
 
 
 
