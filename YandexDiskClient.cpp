@@ -276,9 +276,6 @@ bool YandexDiskClient::downloadFile(
     CURLcode res = curl_easy_perform(curl);
 
     fclose(file);
-    long http_code = 0;
-    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
-    std::cout << "HTTP code: " << http_code << std::endl;
     curl_easy_cleanup(curl);
 
     if (res != CURLE_OK) {
