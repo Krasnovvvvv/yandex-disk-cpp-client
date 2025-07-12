@@ -48,9 +48,20 @@ bool YandexDiskClient::publish(const std::string& path) {
             path,
             ""
     );
-    performRequest(url, "PUT");
+    std::string resp = performRequest(url, "PUT");
+    auto json = nlohmann::json::parse(resp);
+
+    if (json.contains("error")) {
+        std::string msg = "Yandex.Disk API error";
+        if (json.contains("message") && json["message"].is_string())
+            msg += ": " + json["message"].get<std::string>();
+        else if (json["error"].is_string())
+            msg += ": " + json["error"].get<std::string>();
+        throw std::runtime_error(msg);
+    }
     return true;
 }
+
 
 std::string YandexDiskClient::getLinkByKey(
         const std::string& path,
