@@ -156,20 +156,43 @@ std::string YandexDiskClient::makeUploadDiskPath(
         const std::string& upload_disk_path,
         const std::string& local_path) {
 
-    std::filesystem::path localFile(local_path);
-    std::filesystem::path diskDir(upload_disk_path);
+    std::filesystem::path diskPath(upload_disk_path);
+    if (diskPath.has_filename() && diskPath.extension() != "") {
+#if defined(_WIN32)
+        return diskPath.u8string();
+#else
+        return diskPath.string();
+#endif
+    }
 
-    return (diskDir / localFile.filename()).string();
+    std::filesystem::path localFile(local_path);
+
+#if defined(_WIN32)
+    return (diskPath / localFile.filename()).u8string();
+#else
+    return (diskPath / localFile.filename()).string();
+#endif
 }
 
 std::string YandexDiskClient::makeLocalDownloadPath(
         const std::string& download_disk_path,
         const std::string& local_path) {
-
-    std::filesystem::path diskFile(download_disk_path);
     std::filesystem::path localDir(local_path);
+    std::filesystem::path diskFile(download_disk_path);
 
+    if (localDir.has_filename() && localDir.extension() != "") {
+#if defined(_WIN32)
+        return localDir.u8string();
+#else
+        return localDir.string();
+#endif
+    }
+
+#if defined(_WIN32)
+    return (localDir / diskFile.filename()).u8string();
+#else
     return (localDir / diskFile.filename()).string();
+#endif
 }
 
 bool YandexDiskClient::uploadFile(
@@ -180,7 +203,12 @@ bool YandexDiskClient::uploadFile(
 
     std::string url = getUploadUrl(upload_disk_path);
 
+#if defined(_WIN32)
+    FILE* file = _wfopen(std::filesystem::path(local_path).wstring().c_str(), L"rb");
+#else
     FILE* file = fopen(local_path.c_str(), "rb");
+#endif
+
     if (!file) {
         throw std::runtime_error("Couldn't open the file: " + local_path);
     }
@@ -224,7 +252,11 @@ bool YandexDiskClient::downloadFile(
 
     std::string url = getDownloadUrl(download_disk_path);
 
+#if defined(_WIN32)
+    FILE* file = _wfopen(std::filesystem::path(local_path).wstring().c_str(), L"wb");
+#else
     FILE* file = fopen(local_path.c_str(), "wb");
+#endif
     if (!file) {
         throw std::runtime_error("Failed to create a file: " + local_path);
     }
