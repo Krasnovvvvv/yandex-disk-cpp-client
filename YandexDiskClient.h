@@ -23,6 +23,13 @@ private:
     std::string performRequest(const std::string& url, const std::string& method = "GET");
     std::string getUploadUrl(const std::string& upload_disk_path);
     std::string getDownloadUrl(const std::string& download_disk_path);
+    std::string getLinkByKey(
+            const std::string& path,
+            const std::string& endpoint,
+            const std::string& key,
+            const std::string& extraParams,
+            const std::string& errorMsg
+    );
 
 
 };
