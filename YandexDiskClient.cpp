@@ -171,8 +171,10 @@ std::string YandexDiskClient::makeLocalDownloadPath(
     return (localDir / diskFile.filename()).string();
 }
 
-bool YandexDiskClient::uploadFile(const std::string& upload_disk_path,
+bool YandexDiskClient::uploadFile(const std::string& disk_dir,
                                   const std::string& local_path) {
+
+    std::string upload_disk_path = makeUploadDiskPath(disk_dir, local_path);
 
     std::string url = getUploadUrl(upload_disk_path);
 
@@ -204,7 +206,7 @@ bool YandexDiskClient::uploadFile(const std::string& upload_disk_path,
 
     if (res != CURLE_OK) {
         throw std::runtime_error("File upload error: " +
-        std::string(curl_easy_strerror(res)));
+                                 std::string(curl_easy_strerror(res)));
     }
 
     return true;
