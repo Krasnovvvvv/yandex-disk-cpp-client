@@ -1,6 +1,7 @@
 #include "YandexDiskClient.h"
 #include <curl/curl.h>
 #include <stdexcept>
+#include <filesystem>
 
 size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp) {
     ((std::string*)userp)->append((char*)contents, size * nmemb);
@@ -150,8 +151,29 @@ std::string YandexDiskClient::getDownloadUrl(const std::string& download_disk_pa
     );
 }
 
+std::string YandexDiskClient::makeUploadDiskPath(
+        const std::string& upload_disk_path,
+        const std::string& local_path) {
+
+    std::filesystem::path localFile(local_path);
+    std::filesystem::path diskDir(upload_disk_path);
+
+    return (diskDir / localFile.filename()).string();
+}
+
+std::string YandexDiskClient::makeLocalDownloadPath(
+        const std::string& download_disk_path,
+        const std::string& local_path) {
+
+    std::filesystem::path diskFile(download_disk_path);
+    std::filesystem::path localDir(local_path);
+
+    return (localDir / diskFile.filename()).string();
+}
+
 bool YandexDiskClient::uploadFile(const std::string& upload_disk_path,
                                   const std::string& local_path) {
+
     std::string url = getUploadUrl(upload_disk_path);
 
     FILE* file = fopen(local_path.c_str(), "rb");
@@ -181,7 +203,8 @@ bool YandexDiskClient::uploadFile(const std::string& upload_disk_path,
     curl_easy_cleanup(curl);
 
     if (res != CURLE_OK) {
-        throw std::runtime_error("File upload error: " + std::string(curl_easy_strerror(res)));
+        throw std::runtime_error("File upload error: " +
+        std::string(curl_easy_strerror(res)));
     }
 
     return true;

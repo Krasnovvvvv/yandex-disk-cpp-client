@@ -5,6 +5,7 @@
 #pragma once
 #include <string>
 #include <nlohmann/json.hpp>
+#include <filesystem>
 
 class YandexDiskClient {
 public:
@@ -37,6 +38,14 @@ private:
             const std::string& ,
             const std::string&
     );
+
+    std::string makeUploadDiskPath(
+            const std::string& ,
+            const std::string& );
+
+    std::string makeLocalDownloadPath(
+            const std::string& ,
+            const std::string& );
 
 
 };
