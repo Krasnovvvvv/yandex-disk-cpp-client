@@ -9,6 +9,7 @@ size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp) {
     return size * nmemb;
 }
 
+
 YandexDiskClient::YandexDiskClient(const std::string& oauth_token)
         : token(oauth_token) {}
 
