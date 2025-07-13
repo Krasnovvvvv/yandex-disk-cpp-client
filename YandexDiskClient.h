@@ -6,6 +6,7 @@
 #include <string>
 #include <nlohmann/json.hpp>
 #include <filesystem>
+#include <map>
 
 class YandexDiskClient {
 public:
@@ -17,8 +18,13 @@ public:
     std::string getPublicDownloadLink(const std::string& );
     bool uploadFile(const std::string& , const std::string& );
     bool downloadFile(const std::string& , const std::string& );
-    bool deleteFile(const std::string& );
+    bool deleteFileOrDir(const std::string& );
     bool createDirectory(const std::string& disk_path);
+    bool moveFileOrDir(
+            const std::string& from_path,
+            const std::string& to_path,
+            bool overwrite = false
+            );
 
 
 private:
@@ -35,6 +41,11 @@ private:
             const std::string& ,
             const std::string& ,
             const std::string&
+    );
+
+    std::string buildUrl(
+            const std::string& endpoint,
+            const std::map<std::string, std::string>& params
     );
 
     std::string buildUrl(

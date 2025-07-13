@@ -2,6 +2,7 @@
 #include <curl/curl.h>
 #include <stdexcept>
 #include <filesystem>
+#include <map>
 
 size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp) {
     ((std::string*)userp)->append((char*)contents, size * nmemb);
@@ -11,6 +12,30 @@ size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp) {
 
 YandexDiskClient::YandexDiskClient(const std::string& oauth_token)
         : token(oauth_token) {}
+
+std::string YandexDiskClient::buildUrl(
+        const std::string& endpoint,
+        const std::map<std::string, std::string>& params
+) {
+    CURL* curl = curl_easy_init();
+    if (!curl) throw std::runtime_error("curl_easy_init() failed");
+
+    std::string url = endpoint;
+    bool first = true;
+    for (const auto& [key, value] : params) {
+        char* escaped = curl_easy_escape(curl, value.c_str(), 0);
+        if (!escaped) {
+            curl_easy_cleanup(curl);
+            throw std::runtime_error("curl_easy_escape() failed");
+        }
+        url += (first ? "?" : "&");
+        url += key + "=" + escaped;
+        curl_free(escaped);
+        first = false;
+    }
+    curl_easy_cleanup(curl);
+    return url;
+}
 
 std::string YandexDiskClient::buildUrl(
         const std::string& endpoint,
@@ -70,6 +95,7 @@ std::string YandexDiskClient::performRequest(
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
     if (method == "PUT") curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
     if (method == "DELETE") curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
+    if (method == "POST") curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
 
     CURLcode res = curl_easy_perform(curl);
 
@@ -296,7 +322,7 @@ bool YandexDiskClient::downloadFile(
     return true;
 }
 
-bool YandexDiskClient::deleteFile(const std::string& disk_path) {
+bool YandexDiskClient::deleteFileOrDir(const std::string& disk_path) {
 
     std::string utf8_disk_path = makeDiskPath(disk_path);
 
@@ -339,6 +365,39 @@ void YandexDiskClient::checkApiError(const std::string& response) {
         throw std::runtime_error(msg);
     }
 }
+
+bool YandexDiskClient::moveFileOrDir(
+        const std::string& from_path,
+        const std::string& to_path,
+        bool overwrite /* = false */
+) {
+
+    std::filesystem::path from_fs(from_path);
+    std::filesystem::path to_fs(to_path);
+
+    if (!to_fs.has_filename() || to_path.back() == '/' || to_path.back() == '\\') {
+        to_fs /= from_fs.filename();
+    }
+
+    std::string from_utf8 = makeDiskPath(from_fs.string());
+    std::string to_utf8 = makeDiskPath(to_fs.string());
+
+    std::map<std::string, std::string> params = {
+            {"from", from_utf8},
+            {"path", to_utf8}
+    };
+    if (overwrite) {
+        params["overwrite"] = "true";
+    }
+
+    std::string url = buildUrl("https://cloud-api.yandex.net/v1/disk/resources/move", params);
+
+    std::string resp = performRequest(url, "POST");
+    checkApiError(resp);
+
+    return true;
+}
+
 
 
 
