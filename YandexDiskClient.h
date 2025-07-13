@@ -12,6 +12,8 @@ class YandexDiskClient {
 public:
     explicit YandexDiskClient(const std::string& );
 
+    nlohmann::json getQuotaInfo();
+    std::string formatQuotaInfo(const nlohmann::json& json);
     nlohmann::json getResourceList(const std::string& path ="/");
     std::string formatResourceList(const nlohmann::json& );
     bool publish(const std::string& );

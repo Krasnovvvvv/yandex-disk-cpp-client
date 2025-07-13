@@ -110,6 +110,37 @@ std::string YandexDiskClient::performRequest(
     return response;
 }
 
+nlohmann::json YandexDiskClient::getQuotaInfo() {
+    std::string url = buildUrl("https://cloud-api.yandex.net/v1/disk", {});
+    std::string resp = performRequest(url, "GET");
+    checkApiError(resp);
+    return nlohmann::json::parse(resp);
+}
+
+#include <iomanip>
+#include <sstream>
+
+std::string YandexDiskClient::formatQuotaInfo(const nlohmann::json& quota) {
+    auto formatSize = [](uint64_t bytes) -> std::string {
+        std::ostringstream oss;
+        double value = bytes;
+        const char* units[] = {"B", "KB", "MB", "GB", "TB"};
+        int i = 0;
+        while (value >= 1024 && i < 4) {
+            value /= 1024;
+            ++i;
+        }
+        oss << std::fixed << std::setprecision(2) << value << " " << units[i];
+        return oss.str();
+    };
+
+    std::ostringstream oss;
+    oss << "Total space: " << formatSize(quota["total_space"].get<uint64_t>()) << "\n";
+    oss << "Used: " << formatSize(quota["used_space"].get<uint64_t>()) << "\n";
+    oss << "In trash: " << formatSize(quota["trash_size"].get<uint64_t>()) << "\n";
+    return oss.str();
+}
+
 nlohmann::json YandexDiskClient::getResourceList(const std::string& path) {
     std::string url = buildUrl(
             "https://cloud-api.yandex.net/v1/disk/resources?path=",

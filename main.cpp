@@ -14,6 +14,8 @@ int main() {
 
     auto files = yandex.getResourceList("/");
     std::cout <<yandex.formatResourceList(files) << std::endl;
+    auto quota = yandex.getQuotaInfo();
+    std::cout << yandex.formatQuotaInfo(quota);
     return 0;
 }
 
