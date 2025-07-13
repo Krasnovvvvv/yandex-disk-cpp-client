@@ -117,16 +117,8 @@ bool YandexDiskClient::publish(const std::string& path) {
             ""
     );
     std::string resp = performRequest(url, "PUT");
-    auto json = nlohmann::json::parse(resp);
+    checkApiError(resp);
 
-    if (json.contains("error")) {
-        std::string msg = "Yandex.Disk API error";
-        if (json.contains("message") && json["message"].is_string())
-            msg += ": " + json["message"].get<std::string>();
-        else if (json["error"].is_string())
-            msg += ": " + json["error"].get<std::string>();
-        throw std::runtime_error(msg);
-    }
     return true;
 }
 
@@ -315,16 +307,7 @@ bool YandexDiskClient::deleteFile(const std::string& disk_path) {
             );
 
     std::string resp = performRequest(url, "DELETE");
-
-    auto json = nlohmann::json::parse(resp, nullptr, false);
-    if(json.is_object() && json.contains("error")) {
-        std::string msg = "Yandex.Disk API error";
-        if(json.contains("message") && json["message"].is_string())
-            msg += ": " + json["message"].get<std::string>();
-        else if (json["error"].is_string())
-            msg += ": " + json["error"].get<std::string>();
-        throw std::runtime_error(msg);
-    }
+    checkApiError(resp);
 
     return true;
 }
@@ -340,8 +323,13 @@ bool YandexDiskClient::createDirectory(const std::string& disk_path) {
     );
 
     std::string resp = performRequest(url, "PUT");
+    checkApiError(resp);
 
-    auto json = nlohmann::json::parse(resp, nullptr, false);
+    return true;
+}
+
+void YandexDiskClient::checkApiError(const std::string& response) {
+    auto json = nlohmann::json::parse(response, nullptr, false);
     if(json.is_object() && json.contains("error")) {
         std::string msg = "Yandex.Disk API error";
         if(json.contains("message") && json["message"].is_string())
@@ -350,8 +338,6 @@ bool YandexDiskClient::createDirectory(const std::string& disk_path) {
             msg += ": " + json["error"].get<std::string>();
         throw std::runtime_error(msg);
     }
-
-    return true;
 }
 
 

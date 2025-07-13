@@ -53,6 +53,8 @@ private:
 
     std::string makeDiskPath(const std::string& disk_path);
 
+    void checkApiError(const std::string& response);
+
 };
 
 
