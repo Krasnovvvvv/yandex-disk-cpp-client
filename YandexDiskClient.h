@@ -50,6 +50,7 @@ private:
             const std::string& ,
             const std::string& );
 
+    std::string makeDiskPath(const std::string& disk_path);
 
 };
 

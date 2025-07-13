@@ -161,6 +161,15 @@ std::string YandexDiskClient::getDownloadUrl(const std::string& download_disk_pa
     );
 }
 
+std::string YandexDiskClient::makeDiskPath(const std::string& disk_path) {
+    std::filesystem::path p(disk_path);
+#if defined(_WIN32)
+    return p.u8string();
+#else
+    return p.string();
+#endif
+}
+
 std::string YandexDiskClient::makeUploadDiskPath(
         const std::string& upload_disk_path,
         const std::string& local_path) {
@@ -297,20 +306,13 @@ bool YandexDiskClient::downloadFile(
 
 bool YandexDiskClient::deleteFile(const std::string& disk_path) {
 
-    std::filesystem::path p(disk_path);
-#if defined(_WIN32)
+    std::string utf8_disk_path = makeDiskPath(disk_path);
+
     std::string url = buildUrl(
             "https://cloud-api.yandex.net/v1/disk/resources?path=",
-            p.u8string(),
+            utf8_disk_path,
             ""
             );
-#else
-    std::string url = buildUrl(
-            "https://cloud-api.yandex.net/v1/disk/resources?path=",
-            p.string(),
-            ""
-            );
-#endif
 
     std::string resp = performRequest(url, "DELETE");
 
