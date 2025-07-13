@@ -3,6 +3,9 @@
 #include <stdexcept>
 #include <filesystem>
 #include <map>
+#include <iostream>
+#include <iomanip>
+#include <sstream>
 
 size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp) {
     ((std::string*)userp)->append((char*)contents, size * nmemb);
@@ -93,9 +96,15 @@ std::string YandexDiskClient::performRequest(
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-    if (method == "PUT") curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
-    if (method == "DELETE") curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
-    if (method == "POST") curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
+
+    if (method == "PUT") {
+        curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
+    } else if (method == "DELETE") {
+        curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
+        curl_easy_setopt(curl, CURLOPT_NOBODY, 0L);
+    } else if (method == "POST") {
+        curl_easy_setopt(curl, CURLOPT_POST, 1L);
+    }
 
     CURLcode res = curl_easy_perform(curl);
 
@@ -116,9 +125,6 @@ nlohmann::json YandexDiskClient::getQuotaInfo() {
     checkApiError(resp);
     return nlohmann::json::parse(resp);
 }
-
-#include <iomanip>
-#include <sstream>
 
 std::string YandexDiskClient::formatQuotaInfo(const nlohmann::json& quota) {
     auto formatSize = [](uint64_t bytes) -> std::string {
