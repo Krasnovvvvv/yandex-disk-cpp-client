@@ -371,11 +371,12 @@ bool YandexDiskClient::moveFileOrDir(
         const std::string& to_path,
         bool overwrite /* = false */
 ) {
-
     std::filesystem::path from_fs(from_path);
     std::filesystem::path to_fs(to_path);
 
-    if (!to_fs.has_filename() || to_path.back() == '/' || to_path.back() == '\\') {
+    if (to_fs.parent_path().empty()) {
+        to_fs = from_fs.parent_path() / to_fs;
+    } else if (!to_fs.has_filename() || to_path.back() == '/' || to_path.back() == '\\') {
         to_fs /= from_fs.filename();
     }
 
@@ -398,6 +399,15 @@ bool YandexDiskClient::moveFileOrDir(
     return true;
 }
 
+bool YandexDiskClient::renameFileOrDir(
+        const std::string& disk_path,
+        const std::string& new_name,
+        bool overwrite /* = false */) {
+
+    std::filesystem::path disk(disk_path);
+    std::filesystem::path dst = disk.parent_path() / new_name;
+    return moveFileOrDir(disk_path, dst.generic_string(), overwrite);
+}
 
 
 

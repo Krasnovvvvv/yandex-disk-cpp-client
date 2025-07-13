@@ -25,6 +25,10 @@ public:
             const std::string& to_path,
             bool overwrite = false
             );
+    bool renameFileOrDir(
+            const std::string& disk_path,
+            const std::string& new_name,
+            bool overwrite = false);
 
 
 private:
