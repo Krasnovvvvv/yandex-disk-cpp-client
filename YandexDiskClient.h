@@ -17,11 +17,14 @@ public:
     std::string getPublicDownloadLink(const std::string& );
     bool uploadFile(const std::string& , const std::string& );
     bool downloadFile(const std::string& , const std::string& );
+    bool deleteFile(const std::string& );
 
 
 private:
     std::string token;
-    std::string performRequest(const std::string& , const std::string& method = "GET");
+    std::string performRequest(const std::string& ,
+                               const std::string& method = "GET",
+                               long* http_code  = nullptr);
     std::string getUploadUrl(const std::string& );
     std::string getDownloadUrl(const std::string& );
 

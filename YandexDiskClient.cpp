@@ -52,8 +52,11 @@ std::string YandexDiskClient::getLinkByKey(
         throw std::runtime_error(errorMsg);
 }
 
-std::string YandexDiskClient::performRequest(const std::string& url,
-                                             const std::string& method) {
+std::string YandexDiskClient::performRequest(
+        const std::string& url,
+        const std::string& method,
+        long* http_code /* = nullptr */)
+{
     CURL* curl = curl_easy_init();
     std::string response;
     if (!curl) throw std::runtime_error("curl_easy_init() failed");
@@ -66,8 +69,14 @@ std::string YandexDiskClient::performRequest(const std::string& url,
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
     if (method == "PUT") curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
+    if (method == "DELETE") curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
 
     CURLcode res = curl_easy_perform(curl);
+
+    long code = 0;
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &code);
+    if (http_code) *http_code = code;
+
     curl_slist_free_all(headers);
     curl_easy_cleanup(curl);
 
@@ -281,6 +290,38 @@ bool YandexDiskClient::downloadFile(
     if (res != CURLE_OK) {
         throw std::runtime_error("File download error: " +
         std::string(curl_easy_strerror(res)));
+    }
+
+    return true;
+}
+
+bool YandexDiskClient::deleteFile(const std::string& disk_path) {
+
+    std::filesystem::path p(disk_path);
+#if defined(_WIN32)
+    std::string url = buildUrl(
+            "https://cloud-api.yandex.net/v1/disk/resources?path=",
+            p.u8string(),
+            ""
+            );
+#else
+    std::string url = buildUrl(
+            "https://cloud-api.yandex.net/v1/disk/resources?path=",
+            p.string(),
+            ""
+            );
+#endif
+
+    std::string resp = performRequest(url, "DELETE");
+
+    auto json = nlohmann::json::parse(resp, nullptr, false);
+    if(json.is_object() && json.contains("error")) {
+        std::string msg = "Yandex.Disk API error";
+        if(json.contains("message") && json["message"].is_string())
+            msg += ": " + json["message"].get<std::string>();
+        else if (json["error"].is_string())
+            msg += ": " + json["error"].get<std::string>();
+        throw std::runtime_error(msg);
     }
 
     return true;
