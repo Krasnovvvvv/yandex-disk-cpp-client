@@ -3,7 +3,6 @@
 #include <stdexcept>
 #include <filesystem>
 #include <map>
-#include <iostream>
 #include <iomanip>
 #include <sstream>
 
@@ -170,6 +169,46 @@ std::string YandexDiskClient::formatResourceList(const nlohmann::json& json) {
             oss << "   Public URL: is missing\n";
         oss << "\n";
     }
+    return oss.str();
+}
+
+std::string YandexDiskClient::getResourceInfo(const std::string& disk_path) {
+
+    std::map<std::string, std::string> params = {
+            {"path", makeDiskPath(disk_path)}
+    };
+    std::string url = buildUrl(
+            "https://cloud-api.yandex.net/v1/disk/resources",
+            params);
+
+    std::string resp = performRequest(url, "GET");
+    checkApiError(resp);
+
+    nlohmann::json info = nlohmann::json::parse(resp);
+
+    std::ostringstream oss;
+    oss << "Name: " << info.value("name", "") << "\n";
+    oss << "Path: " << info.value("path", "") << "\n";
+    oss << "Type: " << info.value("type", "") << "\n";
+    oss << "Size: ";
+    if (info.contains("size")) {
+        double value = info["size"].get<uint64_t>();
+        const char* units[] = {"B", "KB", "MB", "GB", "TB"};
+        int i = 0;
+        while (value >= 1024 && i < 4) {
+            value /= 1024;
+            ++i;
+        }
+        oss << std::fixed << std::setprecision(2) << value << " " << units[i];
+    } else {
+        oss << "—";
+    }
+    oss << "\n";
+    oss << "Created: " << info.value("created", "") << "\n";
+    oss << "Modified: " << info.value("modified", "") << "\n";
+    oss << "Public URL: " << (info.contains("public_url") &&
+    !info["public_url"].is_null() ? info["public_url"].get<std::string>() : "—") << "\n";
+    oss << "MD5: " << info.value("md5", "—") << "\n";
     return oss.str();
 }
 
