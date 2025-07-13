@@ -2,6 +2,7 @@
 #include <curl/curl.h>
 #include <stdexcept>
 #include <filesystem>
+#include <map>
 
 size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp) {
     ((std::string*)userp)->append((char*)contents, size * nmemb);
@@ -11,6 +12,30 @@ size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp) {
 
 YandexDiskClient::YandexDiskClient(const std::string& oauth_token)
         : token(oauth_token) {}
+
+std::string YandexDiskClient::buildUrl(
+        const std::string& endpoint,
+        const std::map<std::string, std::string>& params
+) {
+    CURL* curl = curl_easy_init();
+    if (!curl) throw std::runtime_error("curl_easy_init() failed");
+
+    std::string url = endpoint;
+    bool first = true;
+    for (const auto& [key, value] : params) {
+        char* escaped = curl_easy_escape(curl, value.c_str(), 0);
+        if (!escaped) {
+            curl_easy_cleanup(curl);
+            throw std::runtime_error("curl_easy_escape() failed");
+        }
+        url += (first ? "?" : "&");
+        url += key + "=" + escaped;
+        curl_free(escaped);
+        first = false;
+    }
+    curl_easy_cleanup(curl);
+    return url;
+}
 
 std::string YandexDiskClient::buildUrl(
         const std::string& endpoint,
@@ -70,6 +95,7 @@ std::string YandexDiskClient::performRequest(
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
     if (method == "PUT") curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
     if (method == "DELETE") curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
+    if (method == "POST") curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "POST");
 
     CURLcode res = curl_easy_perform(curl);
 
@@ -82,6 +108,37 @@ std::string YandexDiskClient::performRequest(
 
     if (res != CURLE_OK) throw std::runtime_error(curl_easy_strerror(res));
     return response;
+}
+
+nlohmann::json YandexDiskClient::getQuotaInfo() {
+    std::string url = buildUrl("https://cloud-api.yandex.net/v1/disk", {});
+    std::string resp = performRequest(url, "GET");
+    checkApiError(resp);
+    return nlohmann::json::parse(resp);
+}
+
+#include <iomanip>
+#include <sstream>
+
+std::string YandexDiskClient::formatQuotaInfo(const nlohmann::json& quota) {
+    auto formatSize = [](uint64_t bytes) -> std::string {
+        std::ostringstream oss;
+        double value = bytes;
+        const char* units[] = {"B", "KB", "MB", "GB", "TB"};
+        int i = 0;
+        while (value >= 1024 && i < 4) {
+            value /= 1024;
+            ++i;
+        }
+        oss << std::fixed << std::setprecision(2) << value << " " << units[i];
+        return oss.str();
+    };
+
+    std::ostringstream oss;
+    oss << "Total space: " << formatSize(quota["total_space"].get<uint64_t>()) << "\n";
+    oss << "Used: " << formatSize(quota["used_space"].get<uint64_t>()) << "\n";
+    oss << "In trash: " << formatSize(quota["trash_size"].get<uint64_t>()) << "\n";
+    return oss.str();
 }
 
 nlohmann::json YandexDiskClient::getResourceList(const std::string& path) {
@@ -117,16 +174,8 @@ bool YandexDiskClient::publish(const std::string& path) {
             ""
     );
     std::string resp = performRequest(url, "PUT");
-    auto json = nlohmann::json::parse(resp);
+    checkApiError(resp);
 
-    if (json.contains("error")) {
-        std::string msg = "Yandex.Disk API error";
-        if (json.contains("message") && json["message"].is_string())
-            msg += ": " + json["message"].get<std::string>();
-        else if (json["error"].is_string())
-            msg += ": " + json["error"].get<std::string>();
-        throw std::runtime_error(msg);
-    }
     return true;
 }
 
@@ -159,6 +208,15 @@ std::string YandexDiskClient::getDownloadUrl(const std::string& download_disk_pa
             "",
             "Download URL not found in API response."
     );
+}
+
+std::string YandexDiskClient::makeDiskPath(const std::string& disk_path) {
+    std::filesystem::path p(disk_path);
+#if defined(_WIN32)
+    return p.u8string();
+#else
+    return p.string();
+#endif
 }
 
 std::string YandexDiskClient::makeUploadDiskPath(
@@ -295,26 +353,40 @@ bool YandexDiskClient::downloadFile(
     return true;
 }
 
-bool YandexDiskClient::deleteFile(const std::string& disk_path) {
+bool YandexDiskClient::deleteFileOrDir(const std::string& disk_path) {
 
-    std::filesystem::path p(disk_path);
-#if defined(_WIN32)
+    std::string utf8_disk_path = makeDiskPath(disk_path);
+
     std::string url = buildUrl(
             "https://cloud-api.yandex.net/v1/disk/resources?path=",
-            p.u8string(),
+            utf8_disk_path,
             ""
             );
-#else
-    std::string url = buildUrl(
-            "https://cloud-api.yandex.net/v1/disk/resources?path=",
-            p.string(),
-            ""
-            );
-#endif
 
     std::string resp = performRequest(url, "DELETE");
+    checkApiError(resp);
 
-    auto json = nlohmann::json::parse(resp, nullptr, false);
+    return true;
+}
+
+bool YandexDiskClient::createDirectory(const std::string& disk_path) {
+
+    std::string utf8_disk_path = makeDiskPath(disk_path);
+
+    std::string url = buildUrl(
+            "https://cloud-api.yandex.net/v1/disk/resources?path=",
+            utf8_disk_path,
+            ""
+    );
+
+    std::string resp = performRequest(url, "PUT");
+    checkApiError(resp);
+
+    return true;
+}
+
+void YandexDiskClient::checkApiError(const std::string& response) {
+    auto json = nlohmann::json::parse(response, nullptr, false);
     if(json.is_object() && json.contains("error")) {
         std::string msg = "Yandex.Disk API error";
         if(json.contains("message") && json["message"].is_string())
@@ -323,8 +395,49 @@ bool YandexDiskClient::deleteFile(const std::string& disk_path) {
             msg += ": " + json["error"].get<std::string>();
         throw std::runtime_error(msg);
     }
+}
+
+bool YandexDiskClient::moveFileOrDir(
+        const std::string& from_path,
+        const std::string& to_path,
+        bool overwrite /* = false */
+) {
+    std::filesystem::path from_fs(from_path);
+    std::filesystem::path to_fs(to_path);
+
+    if (to_fs.parent_path().empty()) {
+        to_fs = from_fs.parent_path() / to_fs;
+    } else if (!to_fs.has_filename() || to_path.back() == '/' || to_path.back() == '\\') {
+        to_fs /= from_fs.filename();
+    }
+
+    std::string from_utf8 = makeDiskPath(from_fs.string());
+    std::string to_utf8 = makeDiskPath(to_fs.string());
+
+    std::map<std::string, std::string> params = {
+            {"from", from_utf8},
+            {"path", to_utf8}
+    };
+    if (overwrite) {
+        params["overwrite"] = "true";
+    }
+
+    std::string url = buildUrl("https://cloud-api.yandex.net/v1/disk/resources/move", params);
+
+    std::string resp = performRequest(url, "POST");
+    checkApiError(resp);
 
     return true;
+}
+
+bool YandexDiskClient::renameFileOrDir(
+        const std::string& disk_path,
+        const std::string& new_name,
+        bool overwrite /* = false */) {
+
+    std::filesystem::path disk(disk_path);
+    std::filesystem::path dst = disk.parent_path() / new_name;
+    return moveFileOrDir(disk_path, dst.generic_string(), overwrite);
 }
 
 
