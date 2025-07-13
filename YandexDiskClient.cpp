@@ -329,6 +329,31 @@ bool YandexDiskClient::deleteFile(const std::string& disk_path) {
     return true;
 }
 
+bool YandexDiskClient::createDirectory(const std::string& disk_path) {
+
+    std::string utf8_disk_path = makeDiskPath(disk_path);
+
+    std::string url = buildUrl(
+            "https://cloud-api.yandex.net/v1/disk/resources?path=",
+            utf8_disk_path,
+            ""
+    );
+
+    std::string resp = performRequest(url, "PUT");
+
+    auto json = nlohmann::json::parse(resp, nullptr, false);
+    if(json.is_object() && json.contains("error")) {
+        std::string msg = "Yandex.Disk API error";
+        if(json.contains("message") && json["message"].is_string())
+            msg += ": " + json["message"].get<std::string>();
+        else if (json["error"].is_string())
+            msg += ": " + json["error"].get<std::string>();
+        throw std::runtime_error(msg);
+    }
+
+    return true;
+}
+
 
 
 

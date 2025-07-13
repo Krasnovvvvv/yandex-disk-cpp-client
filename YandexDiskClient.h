@@ -18,6 +18,7 @@ public:
     bool uploadFile(const std::string& , const std::string& );
     bool downloadFile(const std::string& , const std::string& );
     bool deleteFile(const std::string& );
+    bool createDirectory(const std::string& disk_path);
 
 
 private:
