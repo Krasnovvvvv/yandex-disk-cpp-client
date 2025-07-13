@@ -16,6 +16,7 @@ public:
     std::string formatQuotaInfo(const nlohmann::json& json);
     nlohmann::json getResourceList(const std::string& path ="/");
     std::string formatResourceList(const nlohmann::json& );
+    std::string getResourceInfo(const std::string& disk_path);
     bool publish(const std::string& );
     std::string getPublicDownloadLink(const std::string& );
     bool uploadFile(const std::string& , const std::string& );
