@@ -426,6 +426,42 @@ bool YandexDiskClient::downloadFile(
     return true;
 }
 
+bool YandexDiskClient::uploadDirectory(
+        const std::string& disk_path,
+        const std::string& local_path)
+{
+    namespace fs = std::filesystem;
+
+    if (!fs::exists(local_path) || !fs::is_directory(local_path)) {
+        throw std::runtime_error("Local directory does not exist: " + local_path);
+    }
+
+    fs::path disk_fs(disk_path);
+    fs::path local_fs(local_path);
+
+    if (disk_fs.empty() || disk_fs == "/" ||
+    !disk_fs.has_filename() ||
+    disk_path.back() == '/' ||
+    disk_path.back() == '\\') {
+        disk_fs /= local_fs.filename();
+    }
+
+    createDirectory(disk_fs.generic_string());
+
+    for (const auto& entry : fs::recursive_directory_iterator(local_fs)) {
+        fs::path rel_path = fs::relative(entry.path(), local_fs);
+        std::string disk_target = (disk_fs / rel_path).generic_string();
+
+        if (entry.is_directory()) {
+            createDirectory(disk_target);
+        } else if (entry.is_regular_file()) {
+            uploadFile(disk_target, entry.path().string());
+        }
+    }
+
+    return true;
+}
+
 
 bool YandexDiskClient::deleteFileOrDir(const std::string& disk_path) {
 

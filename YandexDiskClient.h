@@ -22,6 +22,9 @@ public:
     std::string getPublicDownloadLink(const std::string& );
     bool uploadFile(const std::string& , const std::string& );
     bool downloadFile(const std::string& , const std::string& );
+    bool uploadDirectory(
+            const std::string& disk_path,
+            const std::string& local_path);
     bool deleteFileOrDir(const std::string& );
     bool createDirectory(const std::string& disk_path);
     bool moveFileOrDir(
