@@ -38,7 +38,7 @@ A simple, lightweight, and efficient static library for integrating Yandex.Disk 
 ## Project Structure
 ```
 yandex-disk-cpp-client/
-├── docs/html                # Generated documentation via Doxygen
+├── docs                     # Generated documentation via Doxygen
 ├── examples/                # Example usage programs (main.cpp)
 ├── include/                 # Public headers (YandexDiskClient.h)
 ├── src/                     # Library source files (YandexDiskClient.cpp)
@@ -138,7 +138,7 @@ These dependencies are automatically handled via CMake (assuming installed on yo
 
 ## Documentation
 
-Full API documentation is generated using Doxygen and available in the `docs/html` folder.  
+Full API documentation is generated using Doxygen and available in the `docs/` folder.  
 You can also access the online documentation via GitHub Pages (link above).
 
 ---
