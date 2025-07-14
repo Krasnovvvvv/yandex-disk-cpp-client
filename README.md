@@ -58,7 +58,7 @@ yandex-disk-cpp-client/
 - CMake 3.14 or newer
 - libcurl development files
 - nlohmann/json (header-only, managed via CMake)
-- Environment variable `YADISK_TOKEN` with your Yandex.Disk OAuth token
+- Environment variable `YADISK_TOKEN` with your Yandex.Disk OAuth token **(full disk access)**
 
 ### Build and Run Example
 
@@ -96,6 +96,7 @@ int main() {
     return 0;
 }
 ```
+For more examples, see `examples/`.
 
 ---
 
