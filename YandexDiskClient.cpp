@@ -593,6 +593,26 @@ bool YandexDiskClient::renameFileOrDir(
     return moveFileOrDir(disk_path, dst.generic_string(), overwrite);
 }
 
+bool YandexDiskClient::exists(const std::string& disk_path) {
+    try {
+        std::map<std::string, std::string> params = {
+                {"path", makeDiskPath(disk_path)}
+        };
+        std::string url = buildUrl(
+                "https://cloud-api.yandex.net/v1/disk/resources",
+                params
+        );
+
+        long http_code = 0;
+        std::string resp = performRequest(url, "GET", &http_code);
+
+        return http_code == 200;
+    } catch (const std::exception& ex) {
+        return false;
+    }
+}
+
+
 
 
 

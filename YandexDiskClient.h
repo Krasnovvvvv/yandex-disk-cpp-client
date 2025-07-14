@@ -40,6 +40,7 @@ public:
             const std::string& new_name,
             bool overwrite = false);
 
+    bool exists(const std::string& disk_path);
 
 private:
     std::string token;
