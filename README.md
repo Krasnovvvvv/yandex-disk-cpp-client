@@ -41,7 +41,6 @@ yandex-disk-cpp-client/
 ├── include/                 # Public headers (YandexDiskClient.h)
 ├── src/                     # Library source files (YandexDiskClient.cpp)
 ├── examples/                # Example usage programs (main.cpp)
-├── tests/                   # (Optional) Unit tests
 ├── docs/                    # Generated documentation via Doxygen
 ├── CMakeLists.txt           # Build configuration
 ├── README.md                # This file
