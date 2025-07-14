@@ -152,5 +152,5 @@ Please open issues or pull requests on the GitHub repository.
 
 ## License
 
-This project is licensed under the MIT License — see the LICENSE file for details or [![License](https://img.shields.io/github/license/Krasnovvvvv/yandex-disk-cpp-client)](LICENSE).
+This project is licensed under the MIT License — see [![License](https://img.shields.io/github/license/Krasnovvvvv/yandex-disk-cpp-client)](LICENSE).
 
