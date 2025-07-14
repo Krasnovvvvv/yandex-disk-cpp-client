@@ -36,7 +36,7 @@ A simple, lightweight, and efficient static library for integrating Yandex.Disk 
 ---
 
 ## Project Structure
-
+```
 yandex-disk-cpp-client/
 ├── include/                 # Public headers (YandexDiskClient.h)
 ├── src/                     # Library source files (YandexDiskClient.cpp)
@@ -47,6 +47,7 @@ yandex-disk-cpp-client/
 ├── README.md                # This file
 ├── LICENSE                  # License file
 ├── .gitignore               # Git ignore rules
+```
 
 ---
 
