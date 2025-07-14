@@ -139,7 +139,7 @@ These dependencies are automatically handled via CMake (assuming installed on yo
 ## Documentation
 
 Full API documentation is generated using Doxygen and available in the `docs/` folder.  
-You can also access the online documentation via GitHub Pages (link above).
+You can also access the online documentation via GitHub Pages [![Documentation](https://img.shields.io/badge/docs-online-blue)](https://Krasnovvvvv.github.io/yandex-disk-cpp-client/).
 
 ---
 
@@ -152,5 +152,5 @@ Please open issues or pull requests on the GitHub repository.
 
 ## License
 
-This project is licensed under the MIT License — see the LICENSE file for details.
+This project is licensed under the MIT License — see the LICENSE file for details or [![License](https://img.shields.io/github/license/Krasnovvvvv/yandex-disk-cpp-client)](LICENSE).
 
