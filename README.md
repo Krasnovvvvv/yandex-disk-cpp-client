@@ -137,7 +137,7 @@ These dependencies are automatically handled via CMake (assuming installed on yo
 
 ## Documentation
 
-Full API documentation is generated using Doxygen and available in the `docs/` folder after building.  
+Full API documentation is generated using Doxygen and available in the `docs/html` folder.  
 You can also access the online documentation via GitHub Pages (link above).
 
 ---
