@@ -18,6 +18,7 @@ public:
     std::string formatResourceList(const nlohmann::json& );
     std::string getResourceInfo(const std::string& disk_path);
     bool publish(const std::string& );
+    bool unpublish(const std::string& disk_path);
     std::string getPublicDownloadLink(const std::string& );
     bool uploadFile(const std::string& , const std::string& );
     bool downloadFile(const std::string& , const std::string& );

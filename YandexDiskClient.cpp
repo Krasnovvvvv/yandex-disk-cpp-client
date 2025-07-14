@@ -224,6 +224,23 @@ bool YandexDiskClient::publish(const std::string& path) {
     return true;
 }
 
+bool YandexDiskClient::unpublish(const std::string& disk_path) {
+
+    std::map<std::string, std::string> params = {
+            {"path", makeDiskPath(disk_path)}
+    };
+
+    std::string url = buildUrl(
+            "https://cloud-api.yandex.net/v1/disk/resources/unpublish",
+            params
+            );
+
+    std::string resp = performRequest(url, "PUT");
+    checkApiError(resp);
+
+    return true;
+}
+
 std::string YandexDiskClient::getPublicDownloadLink(const std::string& path) {
     return getLinkByKey(
             path,
