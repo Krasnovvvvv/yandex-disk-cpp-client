@@ -373,12 +373,24 @@ bool YandexDiskClient::uploadFile(
 
 bool YandexDiskClient::downloadFile(
         const std::string& download_disk_path,
-        const std::string& local_dir) {
+        const std::string& local_dir)
+{
 
-    std::string local_path = makeLocalDownloadPath(
-            download_disk_path,
-            local_dir);
+    std::map<std::string, std::string> params = {
+            {"path", makeDiskPath(download_disk_path)}
+    };
+    std::string info_url = buildUrl(
+            "https://cloud-api.yandex.net/v1/disk/resources",
+            params);
+    std::string info_resp = performRequest(info_url, "GET");
+    nlohmann::json meta = nlohmann::json::parse(info_resp);
 
+    if (meta.value("type", "") == "dir") {
+        throw std::runtime_error("Cannot download: '" +
+        download_disk_path + "' is a directory, not a file.");
+    }
+
+    std::string local_path = makeLocalDownloadPath(download_disk_path, local_dir);
     std::string url = getDownloadUrl(download_disk_path);
 
 #if defined(_WIN32)
@@ -401,7 +413,6 @@ bool YandexDiskClient::downloadFile(
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, nullptr);
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 
-
     CURLcode res = curl_easy_perform(curl);
 
     fclose(file);
@@ -409,11 +420,12 @@ bool YandexDiskClient::downloadFile(
 
     if (res != CURLE_OK) {
         throw std::runtime_error("File download error: " +
-        std::string(curl_easy_strerror(res)));
+                                 std::string(curl_easy_strerror(res)));
     }
 
     return true;
 }
+
 
 bool YandexDiskClient::deleteFileOrDir(const std::string& disk_path) {
 
