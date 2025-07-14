@@ -42,6 +42,22 @@ public:
 
     bool exists(const std::string& disk_path);
 
+    nlohmann::json getTrashResourceList(const std::string& path = "trash:/");
+
+    std::string formatTrashResourceList(const nlohmann::json& json);
+
+    bool restoreFromTrash(const std::string& trash_path);
+
+    bool deleteFromTrash(const std::string& trash_path);
+
+    bool emptyTrash();
+
+    std::vector<std::string> findTrashPathByName(const std::string& name);
+
+    std::vector<std::string> findResourcePathByName(
+            const std::string& name,
+            const std::string& start_path = "/");
+
 private:
     std::string token;
     std::string performRequest(const std::string& ,
@@ -80,6 +96,12 @@ private:
     std::string makeDiskPath(const std::string& disk_path);
 
     void checkApiError(const std::string& response);
+
+    std::vector<std::string> findPathsByName(
+            const std::string& name,
+            const std::string& start_path,
+            std::function<nlohmann::json(const std::string&)> listFunc,
+            bool recursive = true);
 
 };
 

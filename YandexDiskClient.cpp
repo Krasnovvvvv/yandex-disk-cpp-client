@@ -612,6 +612,143 @@ bool YandexDiskClient::exists(const std::string& disk_path) {
     }
 }
 
+nlohmann::json YandexDiskClient::getTrashResourceList(const std::string& path /* = "/" */) {
+    std::map<std::string, std::string> params = {
+            {"path", makeDiskPath(path)}
+    };
+    std::string url = buildUrl(
+            "https://cloud-api.yandex.net/v1/disk/trash/resources",
+            params
+    );
+    std::string resp = performRequest(url, "GET");
+    checkApiError(resp);
+    return nlohmann::json::parse(resp);
+}
+
+std::string YandexDiskClient::formatTrashResourceList(const nlohmann::json& json) {
+    std::ostringstream oss;
+    int idx = 1;
+    if (json.contains("_embedded") &&
+    json["_embedded"].contains("items") &&
+    !json["_embedded"]["items"].empty()) {
+        for (const auto& item : json["_embedded"]["items"]) {
+            oss << idx++ << ". " << item.value("name", "") << "\n";
+            oss << "   Type: " << item.value("type", "") << "\n";
+            oss << "   Trash path: " << item.value("path", "") << "\n";
+            oss << "   Original path: " << item.value("origin_path", "—") << "\n";
+            oss << "   Created: " << item.value("created", "") << "\n";
+            oss << "   Deleted: " << item.value("deleted", "") << "\n";
+            if (item.value("type", "") == "file" && item.contains("size")) {
+                double value = item["size"].get<uint64_t>();
+                const char* units[] = {"B", "KB", "MB", "GB", "TB"};
+                int i = 0;
+                while (value >= 1024 && i < 4) {
+                    value /= 1024;
+                    ++i;
+                }
+                oss << "   Size: " << std::fixed << std::setprecision(2) <<
+                value << " " << units[i] << "\n";
+            }
+            oss << "\n";
+        }
+    } else {
+        oss << "Trash is empty or could not retrieve contents.\n";
+    }
+    return oss.str();
+}
+
+bool YandexDiskClient::restoreFromTrash(const std::string& trash_path) {
+    std::map<std::string, std::string> params = {
+            {"path", makeDiskPath(trash_path)}
+    };
+    std::string url = buildUrl(
+            "https://cloud-api.yandex.net/v1/disk/trash/resources/restore",
+            params
+    );
+    std::string resp = performRequest(url, "PUT");
+    checkApiError(resp);
+    return true;
+}
+
+bool YandexDiskClient::deleteFromTrash(const std::string& trash_path) {
+    std::map<std::string, std::string> params = {
+            {"path", makeDiskPath(trash_path)}
+    };
+    std::string url = buildUrl(
+            "https://cloud-api.yandex.net/v1/disk/trash/resources",
+            params
+    );
+    std::string resp = performRequest(url, "DELETE");
+    checkApiError(resp);
+    return true;
+}
+
+bool YandexDiskClient::emptyTrash() {
+    std::string url = "https://cloud-api.yandex.net/v1/disk/trash/resources?path=";
+    std::string resp = performRequest(url, "DELETE");
+    checkApiError(resp);
+    return true;
+}
+
+std::vector<std::string> YandexDiskClient::findPathsByName(
+        const std::string& name,
+        const std::string& start_path,
+        std::function<nlohmann::json(const std::string&)> listFunc,
+        bool recursive /* = true */)
+{
+    std::vector<std::string> results;
+    nlohmann::json resList = listFunc(start_path);
+    if (resList.contains("_embedded") && resList["_embedded"].contains("items")) {
+        for (const auto& item : resList["_embedded"]["items"]) {
+            if (item.value("name", "") == name) {
+                results.push_back(item.value("path", ""));
+            }
+            if (recursive && item.value("type", "") == "dir") {
+                auto subResults = findPathsByName(
+                        name,
+                        item.value("path", ""),
+                        listFunc,
+                        recursive);
+                results.insert(
+                        results.end(),
+                        subResults.begin(),
+                        subResults.end());
+            }
+        }
+    }
+    return results;
+}
+
+std::vector<std::string> YandexDiskClient::findTrashPathByName(const std::string& name) {
+    auto listTrash =
+            [this](const std::string& path) -> nlohmann::json {
+        return getTrashResourceList(path);
+    };
+
+    return findPathsByName(name, "/", listTrash, false);
+}
+
+std::vector<std::string> YandexDiskClient::findResourcePathByName(
+        const std::string& name,
+        const std::string& start_path /* = "/" */) {
+    auto listDisk =
+            [this](const std::string& path) -> nlohmann::json {
+        return getResourceList(path);
+    };
+
+    return findPathsByName(
+            name,
+            start_path.empty() ? "/" : start_path,
+            listDisk,
+            true);
+}
+
+
+
+
+
+
+
 
 
 
