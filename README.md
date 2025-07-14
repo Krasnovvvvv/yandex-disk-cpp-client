@@ -38,7 +38,7 @@ A simple, lightweight, and efficient static library for integrating Yandex.Disk 
 ```
 yandex-disk-cpp-client/
 ├── docs                     # Generated documentation via Doxygen
-├── examples/                # Example usage programs (main.cpp)
+├── examples/                # Example usage programs
 ├── include/                 # Public headers (YandexDiskClient.h)
 ├── src/                     # Library source files (YandexDiskClient.cpp)
 ├── CMakeLists.txt           # Build configuration
