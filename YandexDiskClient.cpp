@@ -81,7 +81,7 @@ std::string YandexDiskClient::getLinkByKey(
 
 std::string YandexDiskClient::performRequest(
         const std::string& url,
-        const std::string& method,
+        const std::string& method /* = "GET" */,
         long* http_code /* = nullptr */)
 {
     CURL* curl = curl_easy_init();
@@ -146,10 +146,10 @@ std::string YandexDiskClient::formatQuotaInfo(const nlohmann::json& quota) {
     return oss.str();
 }
 
-nlohmann::json YandexDiskClient::getResourceList(const std::string& path) {
+nlohmann::json YandexDiskClient::getResourceList(const std::string& disk_path /* = "/" */) {
     std::string url = buildUrl(
             "https://cloud-api.yandex.net/v1/disk/resources?path=",
-            path,
+            disk_path,
             ""
     );
     std::string resp = performRequest(url);
@@ -241,9 +241,9 @@ bool YandexDiskClient::unpublish(const std::string& disk_path) {
     return true;
 }
 
-std::string YandexDiskClient::getPublicDownloadLink(const std::string& path) {
+std::string YandexDiskClient::getPublicDownloadLink(const std::string& disk_path) {
     return getLinkByKey(
-            path,
+            disk_path,
             "https://cloud-api.yandex.net/v1/disk/resources?path=",
             "public_url",
             "",
@@ -612,9 +612,9 @@ bool YandexDiskClient::exists(const std::string& disk_path) {
     }
 }
 
-nlohmann::json YandexDiskClient::getTrashResourceList(const std::string& path /* = "/" */) {
+nlohmann::json YandexDiskClient::getTrashResourceList(const std::string& trash_path /* = "trash:/" */) {
     std::map<std::string, std::string> params = {
-            {"path", makeDiskPath(path)}
+            {"path", makeDiskPath(trash_path)}
     };
     std::string url = buildUrl(
             "https://cloud-api.yandex.net/v1/disk/trash/resources",
