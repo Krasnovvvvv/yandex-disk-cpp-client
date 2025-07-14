@@ -1,0 +1,28 @@
+var class_yandex_disk_client =
+[
+    [ "YandexDiskClient", "class_yandex_disk_client.html#a41f4d063a5ae4aa9d3e4d270e6d0b610", null ],
+    [ "createDirectory", "class_yandex_disk_client.html#aa8071416b2afa068b279f95bf1eca6d3", null ],
+    [ "deleteFileOrDir", "class_yandex_disk_client.html#a6a1ebefed4f52107e214b6c8528ccaa8", null ],
+    [ "deleteFromTrash", "class_yandex_disk_client.html#af504ababa9f536a521c18bd3a08b4ffa", null ],
+    [ "downloadDirectory", "class_yandex_disk_client.html#a82b17a5b3b628d5c44dd3ff615ac140b", null ],
+    [ "downloadFile", "class_yandex_disk_client.html#a42d61aea3883d6fed46d750c7b271a4d", null ],
+    [ "emptyTrash", "class_yandex_disk_client.html#a07507ca5a2627a309f4ef98a4262df3e", null ],
+    [ "exists", "class_yandex_disk_client.html#a280ddd4ec74d603abdd0ebdc591e8327", null ],
+    [ "findResourcePathByName", "class_yandex_disk_client.html#a13db853fe908abd0e7a48ddf96680fa2", null ],
+    [ "findTrashPathByName", "class_yandex_disk_client.html#ab2c5186c0365c9d26e5b530f4a385a9c", null ],
+    [ "formatQuotaInfo", "class_yandex_disk_client.html#aa8c682a32b1e1d5704b0be77b87ca1c8", null ],
+    [ "formatResourceList", "class_yandex_disk_client.html#a34d043f7c781778c36387f2ff61dae2c", null ],
+    [ "formatTrashResourceList", "class_yandex_disk_client.html#a47138589f401a66dd98c1de0f08e2e17", null ],
+    [ "getPublicDownloadLink", "class_yandex_disk_client.html#a63ff6a5ef4e0335b669c94b275d3a1d3", null ],
+    [ "getQuotaInfo", "class_yandex_disk_client.html#a016dc4b84551b708c434fe4eec8d08f3", null ],
+    [ "getResourceInfo", "class_yandex_disk_client.html#af946f292a6ab74c8f7ccafab7e453cd8", null ],
+    [ "getResourceList", "class_yandex_disk_client.html#a4bb4e10d6ab0ebf7ee2134a9d0e22334", null ],
+    [ "getTrashResourceList", "class_yandex_disk_client.html#aeef32cc4ce873802d45f61a3b8f1ef7c", null ],
+    [ "moveFileOrDir", "class_yandex_disk_client.html#aef6414e9e2bf2811771ee607da408613", null ],
+    [ "publish", "class_yandex_disk_client.html#a78d6ce93b9a8f731a621213f46a9567d", null ],
+    [ "renameFileOrDir", "class_yandex_disk_client.html#ad07537f84032ee1c9e120ba37f2b6377", null ],
+    [ "restoreFromTrash", "class_yandex_disk_client.html#a58aae69c7fcf0d3a363d3e399408d441", null ],
+    [ "unpublish", "class_yandex_disk_client.html#ab8e7e353132087a16c602cd19075e7be", null ],
+    [ "uploadDirectory", "class_yandex_disk_client.html#aa2808ca839914cb036a6c73043a20061", null ],
+    [ "uploadFile", "class_yandex_disk_client.html#ab17796f121e6644046863798aac0a0e6", null ]
+];
