@@ -1,4 +1,4 @@
-# Yandex Disk C++ Client
+# ☁️ Yandex Disk C++ Client
 
 [![License](https://img.shields.io/github/license/Krasnovvvvv/yandex-disk-cpp-client)](LICENSE)
 [![Documentation](https://img.shields.io/badge/docs-online-blue)](https://Krasnovvvvv.github.io/yandex-disk-cpp-client/)
@@ -9,7 +9,7 @@ A simple, lightweight, and efficient static library for integrating Yandex.Disk 
 
 ---
 
-## Features
+## ✨ Features
 
 - **Full API Coverage:**  
   Upload and download files and directories, manage directories, move and rename resources, handle trash operations, publish/unpublish files, and retrieve public download links.
@@ -34,7 +34,7 @@ A simple, lightweight, and efficient static library for integrating Yandex.Disk 
 
 ---
 
-## Project Structure
+## 📁 Project Structure
 ```
 yandex-disk-cpp-client/
 ├── docs                     # Generated documentation via Doxygen
@@ -49,9 +49,9 @@ yandex-disk-cpp-client/
 
 ---
 
-## Quick Start
+## 🚀 Quick Start
 
-### Prerequisites
+### 🛠️ Prerequisites
 
 - C++17 compatible compiler (GCC, Clang, MSVC)
 - CMake 3.14 or newer
@@ -59,7 +59,7 @@ yandex-disk-cpp-client/
 - nlohmann/json (header-only, managed via CMake)
 - Environment variable `YADISK_TOKEN` with your Yandex.Disk OAuth token **(full disk access)**
 
-### Build and Run Example
+### ⚡ Build and Run Example
 
 ```sh
 git clone https://github.com/Krasnovvvvv/yandex-disk-cpp-client.git
@@ -70,7 +70,7 @@ cmake --build .
 ./yandex_disk_example
 ```
 
-### Example Usage
+### 💻 Example Usage
 
 ```cpp
 #include "YandexDiskClient.h"
@@ -99,7 +99,7 @@ For more examples, see `examples/`.
 
 ---
 
-## API Overview
+## 🧭 API Overview
 
 | Function                                 | Description                                               |
 |------------------------------------------|-----------------------------------------------------------|
@@ -126,7 +126,7 @@ For more examples, see `examples/`.
 
 ---
 
-## Dependencies
+## 📦 Dependencies
 
 - [libcurl](https://curl.se/libcurl/) — for HTTP requests
 - [nlohmann/json](https://github.com/nlohmann/json) — for JSON parsing
@@ -135,21 +135,21 @@ These dependencies are automatically handled via CMake (assuming installed on yo
 
 ---
 
-## Documentation
+## 📚 Documentation
 
 Full API documentation is generated using Doxygen and available in the `docs/` folder.  
 You can also access the online documentation via GitHub Pages [![Documentation](https://img.shields.io/badge/docs-online-blue)](https://Krasnovvvvv.github.io/yandex-disk-cpp-client/).
 
 ---
 
-## Contribution
+## 🤝 Contribution
 
 Contributions, bug reports, and feature requests are welcome!  
 Please open issues or pull requests on the GitHub repository.
 
 ---
 
-## License
+## 📝 License
 
 This project is licensed under the MIT License — see [![License](https://img.shields.io/github/license/Krasnovvvvv/yandex-disk-cpp-client)](LICENSE).
 
