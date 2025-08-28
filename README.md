@@ -70,7 +70,7 @@ cmake --build .
 ./yandex_disk_example
 ```
 
-### 💻 Example Usage
+### 📖 Example Usage
 
 ```cpp
 #include "YandexDiskClient.h"
@@ -95,7 +95,7 @@ int main() {
     return 0;
 }
 ```
-For more examples, see `examples/`.
+> For more examples, see `examples/`
 
 ---
 
@@ -131,7 +131,7 @@ For more examples, see `examples/`.
 - [libcurl](https://curl.se/libcurl/) — for HTTP requests
 - [nlohmann/json](https://github.com/nlohmann/json) — for JSON parsing
 
-These dependencies are automatically handled via CMake (assuming installed on your system or via package managers like vcpkg).
+> These dependencies are automatically handled via CMake (assuming installed on your system or via package managers like vcpkg)
 
 ---
 
