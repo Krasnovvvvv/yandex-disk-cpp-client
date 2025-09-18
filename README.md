@@ -1,40 +1,40 @@
-# Yandex Disk C++ Client
+# ☁️ Yandex Disk C++ Client
 
 [![License](https://img.shields.io/github/license/Krasnovvvvv/yandex-disk-cpp-client)](LICENSE)
 [![Documentation](https://img.shields.io/badge/docs-online-blue)](https://Krasnovvvvv.github.io/yandex-disk-cpp-client/)
 [![GitHub stars](https://img.shields.io/github/stars/Krasnovvvvv/yandex-disk-cpp-client?style=social)](https://github.com/Krasnovvvvv/yandex-disk-cpp-client/stargazers)
 
 Modern C++ client library for the Yandex.Disk REST API.  
-A simple, lightweight, and efficient static library for integrating Yandex.Disk cloud storage into C++ projects across platforms.
+A simple, lightweight, and efficient static library for integrating Yandex.Disk cloud storage into C++ projects across platforms
 
 ---
 
-## Features
+## ✨ Features
 
 - **Full API Coverage:**  
-  Upload and download files and directories, manage directories, move and rename resources, handle trash operations, publish/unpublish files, and retrieve public download links.
+  Upload and download files and directories, manage directories, move and rename resources, handle trash operations, publish/unpublish files, and retrieve public download links
 
 - **Robust File Management:**  
-  Recursive upload/download of directories, existence checks, and detailed resource information retrieval.
+  Recursive upload/download of directories, existence checks, and detailed resource information retrieval
 
 - **Trash Support:**  
-  List trash contents, restore files/folders to original locations, delete individual items or empty the entire trash.
+  List trash contents, restore files/folders to original locations, delete individual items or empty the entire trash
 
 - **Search Functionality:**  
-  Find files and folders by name both on the disk and in the trash, supporting recursive search and multiple matches.
+  Find files and folders by name both on the disk and in the trash, supporting recursive search and multiple matches
 
 - **Cross-Platform Compatibility:**  
-  Works on Windows, Linux, and macOS with support for Unicode paths.
+  Works on Windows, Linux, and macOS with support for Unicode paths
 
 - **Minimal Dependencies:**  
-  Depends only on `libcurl` for HTTP communication and `nlohmann/json` for JSON parsing.
+  Depends only on `libcurl` for HTTP communication and `nlohmann/json` for JSON parsing
 
 - **Easy Integration:**  
-  Provided as a static library with a clean header interface for straightforward inclusion in your projects.
+  Provided as a static library with a clean header interface for straightforward inclusion in your projects
 
 ---
 
-## Project Structure
+## 📁 Project Structure
 ```
 yandex-disk-cpp-client/
 ├── docs                     # Generated documentation via Doxygen
@@ -49,9 +49,9 @@ yandex-disk-cpp-client/
 
 ---
 
-## Quick Start
+## 🚀 Quick Start
 
-### Prerequisites
+### 🛠️ Prerequisites
 
 - C++17 compatible compiler (GCC, Clang, MSVC)
 - CMake 3.14 or newer
@@ -59,7 +59,7 @@ yandex-disk-cpp-client/
 - nlohmann/json (header-only, managed via CMake)
 - Environment variable `YADISK_TOKEN` with your Yandex.Disk OAuth token **(full disk access)**
 
-### Build and Run Example
+### ⚡ Build and Run Example
 
 ```sh
 git clone https://github.com/Krasnovvvvv/yandex-disk-cpp-client.git
@@ -70,7 +70,7 @@ cmake --build .
 ./yandex_disk_example
 ```
 
-### Example Usage
+### 📖 Example Usage
 
 ```cpp
 #include "YandexDiskClient.h"
@@ -95,11 +95,11 @@ int main() {
     return 0;
 }
 ```
-For more examples, see `examples/`.
+> For more examples, see `examples/`
 
 ---
 
-## API Overview
+## 🧭 API Overview
 
 | Function                                 | Description                                               |
 |------------------------------------------|-----------------------------------------------------------|
@@ -126,30 +126,30 @@ For more examples, see `examples/`.
 
 ---
 
-## Dependencies
+## 📦 Dependencies
 
 - [libcurl](https://curl.se/libcurl/) — for HTTP requests
 - [nlohmann/json](https://github.com/nlohmann/json) — for JSON parsing
 
-These dependencies are automatically handled via CMake (assuming installed on your system or via package managers like vcpkg).
+> These dependencies are automatically handled via CMake (assuming installed on your system or via package managers like vcpkg)
 
 ---
 
-## Documentation
+## 📚 Documentation
 
-Full API documentation is generated using Doxygen and available in the `docs/` folder.  
-You can also access the online documentation via GitHub Pages [![Documentation](https://img.shields.io/badge/docs-online-blue)](https://Krasnovvvvv.github.io/yandex-disk-cpp-client/).
+Full API documentation is generated using Doxygen and available in the `docs/` folder  
+You can also access the online documentation via GitHub Pages [![Documentation](https://img.shields.io/badge/docs-online-blue)](https://Krasnovvvvv.github.io/yandex-disk-cpp-client/)
 
 ---
 
-## Contribution
+## 🤝 Contribution
 
 Contributions, bug reports, and feature requests are welcome!  
-Please open issues or pull requests on the GitHub repository.
+Please open issues or pull requests on the GitHub repository
 
 ---
 
-## License
+## 📝 License
 
-This project is licensed under the MIT License — see [![License](https://img.shields.io/github/license/Krasnovvvvv/yandex-disk-cpp-client)](LICENSE).
+This project is licensed under the MIT License — see [![License](https://img.shields.io/github/license/Krasnovvvvv/yandex-disk-cpp-client)](LICENSE)
 
