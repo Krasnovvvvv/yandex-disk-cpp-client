@@ -12,8 +12,11 @@ file(GLOB SOURCES "src/*.cpp")
 add_library(yandex_disk_client STATIC ${SOURCES})
 
 target_include_directories(yandex_disk_client
-        PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+        PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>
 )
+
 
 target_link_libraries(yandex_disk_client
         PUBLIC nlohmann_json::nlohmann_json
@@ -39,4 +42,27 @@ target_link_libraries(example_search_files PRIVATE yandex_disk_client)
 
 add_executable(example_directory_upload_download examples/directory_upload_download.cpp)
 target_link_libraries(example_directory_upload_download PRIVATE yandex_disk_client)
+
+# === Installing a static library ===
+
+install(TARGETS yandex_disk_client
+        EXPORT yandex_disk_client_targets
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin
+        INCLUDES DESTINATION include
+)
+
+# === Copying all public headlines ===
+
+install(DIRECTORY include/ DESTINATION include)
+
+# === Exporting targets for find_package() ===
+
+install(EXPORT yandex_disk_client_targets
+        FILE yandex_disk_clientTargets.cmake
+        NAMESPACE yandex_disk_client::
+        DESTINATION lib/cmake/yandex_disk_client
+)
+
 
