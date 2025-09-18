@@ -4,6 +4,8 @@ project(yandex-disk-cpp-client)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+option(BUILD_EXAMPLES "Build example executables" ON)
+
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(CURL CONFIG REQUIRED)
 
@@ -24,24 +26,25 @@ target_link_libraries(yandex_disk_client
 )
 
 # === Build each example as a separate executable ===
+if(BUILD_EXAMPLES)
+    add_executable(example_basic_usage examples/basic_usage.cpp)
+    target_link_libraries(example_basic_usage PRIVATE yandex_disk_client)
 
-add_executable(example_basic_usage examples/basic_usage.cpp)
-target_link_libraries(example_basic_usage PRIVATE yandex_disk_client)
+    add_executable(example_trash_management examples/trash_management.cpp)
+    target_link_libraries(example_trash_management PRIVATE yandex_disk_client)
 
-add_executable(example_trash_management examples/trash_management.cpp)
-target_link_libraries(example_trash_management PRIVATE yandex_disk_client)
+    add_executable(example_publish_unpublish examples/publish_unpublish.cpp)
+    target_link_libraries(example_publish_unpublish PRIVATE yandex_disk_client)
 
-add_executable(example_publish_unpublish examples/publish_unpublish.cpp)
-target_link_libraries(example_publish_unpublish PRIVATE yandex_disk_client)
+    add_executable(example_move_rename examples/move_rename.cpp)
+    target_link_libraries(example_move_rename PRIVATE yandex_disk_client)
 
-add_executable(example_move_rename examples/move_rename.cpp)
-target_link_libraries(example_move_rename PRIVATE yandex_disk_client)
+    add_executable(example_search_files examples/search_files.cpp)
+    target_link_libraries(example_search_files PRIVATE yandex_disk_client)
 
-add_executable(example_search_files examples/search_files.cpp)
-target_link_libraries(example_search_files PRIVATE yandex_disk_client)
-
-add_executable(example_directory_upload_download examples/directory_upload_download.cpp)
-target_link_libraries(example_directory_upload_download PRIVATE yandex_disk_client)
+    add_executable(example_directory_upload_download examples/directory_upload_download.cpp)
+    target_link_libraries(example_directory_upload_download PRIVATE yandex_disk_client)
+endif()
 
 # === Installing a static library ===
 
