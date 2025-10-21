@@ -1,6 +1,6 @@
 {
   "name": "yandex-disk-cpp-client",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "builtin-baseline": "a345bbdc68cdfda65603e24413b21afb28f110fb",
   "dependencies": [
     "curl",
