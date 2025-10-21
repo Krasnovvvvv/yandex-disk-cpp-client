@@ -1,8 +1,8 @@
 # ☁️ Yandex Disk C++ Client
 
-![GitHub Tag](https://img.shields.io/github/v/tag/Krasnovvvvv/yandex-disk-cpp-client?color=red)
-[![License](https://img.shields.io/github/license/Krasnovvvvv/yandex-disk-cpp-client)](LICENSE)
+![GitHub Tag](https://img.shields.io/github/v/tag/Krasnovvvvv/yandex-disk-cpp-client?color=blue)
 [![Documentation](https://img.shields.io/badge/docs-online-blue)](https://Krasnovvvvv.github.io/yandex-disk-cpp-client/)
+[![License](https://img.shields.io/github/license/Krasnovvvvv/yandex-disk-cpp-client)](LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/Krasnovvvvv/yandex-disk-cpp-client?style=social)](https://github.com/Krasnovvvvv/yandex-disk-cpp-client/stargazers)
 
 ![Ubuntu](https://img.shields.io/badge/Ubuntu-20.04+-orange?logo=ubuntu)
