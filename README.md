@@ -10,8 +10,12 @@
 ![CI Ubuntu](https://img.shields.io/github/actions/workflow/status/Krasnovvvvv/yandex-disk-cpp-client/ci.yml?branch=main&label=Ubuntu&logo=ubuntu)
 ![CI Windows](https://img.shields.io/github/actions/workflow/status/Krasnovvvvv/yandex-disk-cpp-client/ci.yml?branch=main&label=Windows&logo=windows)
 
-Modern C++ client library for the Yandex.Disk REST API.  
+Modern C++ client library for the Yandex.Disk REST API  
 A simple, lightweight, and efficient static library for integrating Yandex.Disk cloud storage into C++ projects across platforms
+
+🔥 Now available on vcpkg – install in one command!
+
+You can quickly install the library using [vcpkg](#-new-installation-via-vcpkg-is-now-available)
 
 ---
 
@@ -75,6 +79,41 @@ cmake ..
 cmake --build .
 ./yandex_disk_example
 ```
+
+### 🔥 New! Installation via vcpkg is now available
+
+You can now install **yandex-disk-cpp-client** directly from the official [vcpkg](https://github.com/microsoft/vcpkg) registry  
+This makes setup and integration seamless for CMake-based projects
+
+#### Install
+
+Run the following command:
+
+```bash
+vcpkg install yandex-disk-cpp-client
+```
+
+If you’re using a specific triplet (e.g., MinGW or Linux static), specify it explicitly:
+
+```bash
+vcpkg install yandex-disk-cpp-client:x64-mingw-static
+```
+
+#### Use in CMake
+
+Once installed, simply include vcpkg’s toolchain and use `find_package` to link the library:
+
+```cmake
+find_package(yandex-disk-cpp-client CONFIG REQUIRED)
+target_link_libraries(example PRIVATE yandex-disk-cpp-client::yandex-disk-cpp-client)
+```
+
+#### That’s it!
+
+- Dependencies such as **libcurl** and **nlohmann-json** are automatically resolved by vcpkg
+- Works out of the box on Windows, Linux, and macOS
+
+---
 
 ### 📖 Example Usage
 
