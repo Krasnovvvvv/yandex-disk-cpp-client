@@ -1,3 +1,9 @@
 @PACKAGE_INIT@
 
+include(CMakeFindDependencyMacro)
+
+find_dependency(nlohmann_json CONFIG)
+find_dependency(CURL CONFIG)
+
 include("${CMAKE_CURRENT_LIST_DIR}/yandex-disk-cpp-clientTargets.cmake")
+check_required_components(yandex-disk-cpp-client)
