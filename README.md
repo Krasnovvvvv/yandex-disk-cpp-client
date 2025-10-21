@@ -7,8 +7,11 @@
 
 ![Ubuntu](https://img.shields.io/badge/Ubuntu-20.04+-orange?logo=ubuntu)
 ![Windows](https://img.shields.io/badge/Windows-10+-blue?logo=windows)
+![macOS](https://img.shields.io/badge/macOS-12+-silver?logo=apple)
+
 ![CI Ubuntu](https://img.shields.io/github/actions/workflow/status/Krasnovvvvv/yandex-disk-cpp-client/ci.yml?branch=main&label=Ubuntu&logo=ubuntu)
 ![CI Windows](https://img.shields.io/github/actions/workflow/status/Krasnovvvvv/yandex-disk-cpp-client/ci.yml?branch=main&label=Windows&logo=windows)
+![CI macOS](https://img.shields.io/github/actions/workflow/status/Krasnovvvvv/yandex-disk-cpp-client/ci.yml?branch=main&label=macOS&logo=apple)
 
 Modern C++ client library for the Yandex.Disk REST API  
 A simple, lightweight, and efficient static library for integrating Yandex.Disk cloud storage into C++ projects across platforms
