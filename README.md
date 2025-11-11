@@ -3,7 +3,7 @@
 ![GitHub Tag](https://img.shields.io/github/v/tag/Krasnovvvvv/yandex-disk-cpp-client?color=blue)
 [![Documentation](https://img.shields.io/badge/docs-online-blue)](https://Krasnovvvvv.github.io/yandex-disk-cpp-client/)
 [![License](https://img.shields.io/github/license/Krasnovvvvv/yandex-disk-cpp-client)](LICENSE)
-![Stars](https://img.shields.io/github/stars/Krasnovvvvv/numerical-methods-in-physics)
+![Stars](https://img.shields.io/github/stars/Krasnovvvvv/yandex-disk-cpp-client)
 
 ![Ubuntu](https://img.shields.io/badge/Ubuntu-20.04+-orange?logo=ubuntu)
 ![Windows](https://img.shields.io/badge/Windows-10+-blue?logo=windows)
