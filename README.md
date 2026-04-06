@@ -66,9 +66,9 @@ yandex-disk-cpp-client/
 ### 🛠️ Prerequisites
 
 - C++17 compatible compiler (GCC, Clang, MSVC)
-- CMake 3.14 or newer
-- libcurl development files
-- nlohmann/json (header-only, managed via CMake)
+- CMake 3.28 or newer
+- libcurl
+- nlohmann/json
 - Environment variable `YADISK_TOKEN` with your Yandex.Disk OAuth token **(full disk access)**
 
 ### ⚡ Build and Run Example
@@ -79,7 +79,7 @@ cd yandex-disk-cpp-client
 mkdir build && cd build
 cmake ..
 cmake --build .
-./yandex_disk_example
+./example_basic_usage
 ```
 
 ### 🔥 New! Installation via vcpkg is now available
