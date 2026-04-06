@@ -6,11 +6,25 @@
 #include <iomanip>
 #include <sstream>
 
-size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp) {
-    ((std::string*)userp)->append((char*)contents, size * nmemb);
-    return size * nmemb;
-}
+namespace {
+    size_t WriteCallback(void* contents, size_t size, size_t nmemb, void* userp) {
+        ((std::string*)userp)->append((char*)contents, size * nmemb);
+        return size * nmemb;
+    }
 
+    std::string formatBytes(std::uint64_t bytes) {
+        std::ostringstream oss;
+        auto value = static_cast<double>(bytes);
+        const char* units[] = {"B", "KB", "MB", "GB", "TB"};
+        int i = 0;
+        while (value >= 1024 && i < 4) {
+            value /= 1024;
+            ++i;
+        }
+        oss << std::fixed << std::setprecision(2) << value << " " << units[i];
+        return oss.str();
+    }
+}
 
 YandexDiskClient::YandexDiskClient(const std::string& oauth_token)
         : token(oauth_token) {}
@@ -69,6 +83,7 @@ std::string YandexDiskClient::getLinkByKey(
 ) {
     std::string url = buildUrl(endpoint, path, extraParams);
     std::string resp = performRequest(url);
+    checkApiError(resp);
     auto json = nlohmann::json::parse(resp);
 
     if (json.contains(key) && !json[key].is_null())
@@ -126,33 +141,22 @@ nlohmann::json YandexDiskClient::getQuotaInfo() {
 }
 
 std::string YandexDiskClient::formatQuotaInfo(const nlohmann::json& quota) {
-    auto formatSize = [](uint64_t bytes) -> std::string {
         std::ostringstream oss;
-        double value = bytes;
-        const char* units[] = {"B", "KB", "MB", "GB", "TB"};
-        int i = 0;
-        while (value >= 1024 && i < 4) {
-            value /= 1024;
-            ++i;
-        }
-        oss << std::fixed << std::setprecision(2) << value << " " << units[i];
-        return oss.str();
-    };
-
-    std::ostringstream oss;
-    oss << "Total space: " << formatSize(quota["total_space"].get<uint64_t>()) << "\n";
-    oss << "Used: " << formatSize(quota["used_space"].get<uint64_t>()) << "\n";
-    oss << "In trash: " << formatSize(quota["trash_size"].get<uint64_t>()) << "\n";
+    oss << "Total space: " << formatBytes(quota["total_space"].get<uint64_t>()) << "\n";
+    oss << "Used: " << formatBytes(quota["used_space"].get<uint64_t>()) << "\n";
+    oss << "In trash: " << formatBytes(quota["trash_size"].get<uint64_t>()) << "\n";
     return oss.str();
 }
 
 nlohmann::json YandexDiskClient::getResourceList(const std::string& disk_path /* = "/" */) {
+    const std::string path_utf8 = makeDiskPath(disk_path);
     std::string url = buildUrl(
             "https://cloud-api.yandex.net/v1/disk/resources?path=",
-            disk_path,
+            path_utf8,
             ""
     );
     std::string resp = performRequest(url);
+    checkApiError(resp);
     return nlohmann::json::parse(resp);
 }
 
@@ -192,14 +196,7 @@ std::string YandexDiskClient::getResourceInfo(const std::string& disk_path) {
     oss << "Type: " << info.value("type", "") << "\n";
     oss << "Size: ";
     if (info.contains("size")) {
-        double value = info["size"].get<uint64_t>();
-        const char* units[] = {"B", "KB", "MB", "GB", "TB"};
-        int i = 0;
-        while (value >= 1024 && i < 4) {
-            value /= 1024;
-            ++i;
-        }
-        oss << std::fixed << std::setprecision(2) << value << " " << units[i];
+        oss << formatBytes(info["size"].get<std::uint64_t>());
     } else {
         oss << "—";
     }
@@ -213,9 +210,10 @@ std::string YandexDiskClient::getResourceInfo(const std::string& disk_path) {
 }
 
 bool YandexDiskClient::publish(const std::string& path) {
+    const std::string path_utf8 = makeDiskPath(path);
     std::string url = buildUrl(
             "https://cloud-api.yandex.net/v1/disk/resources/publish?path=",
-            path,
+            path_utf8,
             ""
     );
     std::string resp = performRequest(url, "PUT");
@@ -242,8 +240,9 @@ bool YandexDiskClient::unpublish(const std::string& disk_path) {
 }
 
 std::string YandexDiskClient::getPublicDownloadLink(const std::string& disk_path) {
+    const std::string path_utf8 = makeDiskPath(disk_path);
     return getLinkByKey(
-            disk_path,
+            path_utf8,
             "https://cloud-api.yandex.net/v1/disk/resources?path=",
             "public_url",
             "",
@@ -253,8 +252,9 @@ std::string YandexDiskClient::getPublicDownloadLink(const std::string& disk_path
 }
 
 std::string YandexDiskClient::getUploadUrl(const std::string& upload_disk_path) {
+    const std::string path_utf8 = makeDiskPath(upload_disk_path);
     return getLinkByKey(
-            upload_disk_path,
+            path_utf8,
             "https://cloud-api.yandex.net/v1/disk/resources/upload?path=",
             "href",
             "&overwrite=true",
@@ -263,8 +263,9 @@ std::string YandexDiskClient::getUploadUrl(const std::string& upload_disk_path) 
 }
 
 std::string YandexDiskClient::getDownloadUrl(const std::string& download_disk_path) {
+    const std::string path_utf8 = makeDiskPath(download_disk_path);
     return getLinkByKey(
-            download_disk_path,
+            path_utf8,
             "https://cloud-api.yandex.net/v1/disk/resources/download?path=",
             "href",
             "",
@@ -383,6 +384,7 @@ bool YandexDiskClient::downloadFile(
             "https://cloud-api.yandex.net/v1/disk/resources",
             params);
     std::string info_resp = performRequest(info_url, "GET");
+    checkApiError(info_resp);
     nlohmann::json meta = nlohmann::json::parse(info_resp);
 
     if (meta.value("type", "") == "dir") {
@@ -639,15 +641,7 @@ std::string YandexDiskClient::formatTrashResourceList(const nlohmann::json& json
             oss << "   Created: " << item.value("created", "") << "\n";
             oss << "   Deleted: " << item.value("deleted", "") << "\n";
             if (item.value("type", "") == "file" && item.contains("size")) {
-                double value = item["size"].get<uint64_t>();
-                const char* units[] = {"B", "KB", "MB", "GB", "TB"};
-                int i = 0;
-                while (value >= 1024 && i < 4) {
-                    value /= 1024;
-                    ++i;
-                }
-                oss << "   Size: " << std::fixed << std::setprecision(2) <<
-                value << " " << units[i] << "\n";
+                oss << "   Size: " << formatBytes(item["size"].get<std::uint64_t>()) << "\n";
             }
             oss << "\n";
         }
@@ -742,16 +736,3 @@ std::vector<std::string> YandexDiskClient::findResourcePathByName(
             listDisk,
             true);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
