@@ -7,6 +7,8 @@
 #include <filesystem>
 #include <map>
 
+#include "HttpClient.h"
+
 /**
  * @brief C++ client for Yandex.Disk REST API.
  */
@@ -229,11 +231,7 @@ public:
             const std::string& start_path = "/");
 
 private:
-    std::string token;
-
-    std::string performRequest(const std::string& url,
-                               const std::string& method = "GET",
-                               long* http_code = nullptr);
+    HttpClient http_;
 
     std::string getUploadUrl(const std::string& upload_disk_path);
 
@@ -277,6 +275,4 @@ private:
             bool recursive = true);
 
 };
-
-
 #endif //YANDEX_DISK_CPP_CLIENT_YANDEXDISKCLIENT_H

@@ -1,4 +1,5 @@
 #include "YandexDiskClient.h"
+#include "HttpClient.h"
 #include <curl/curl.h>
 #include <stdexcept>
 #include <filesystem>
@@ -27,7 +28,7 @@ namespace {
 }
 
 YandexDiskClient::YandexDiskClient(const std::string& oauth_token)
-        : token(oauth_token) {}
+        : http_(oauth_token) {}
 
 std::string YandexDiskClient::buildUrl(
         const std::string& endpoint,
@@ -82,7 +83,8 @@ std::string YandexDiskClient::getLinkByKey(
         const std::string& errorMsg
 ) {
     std::string url = buildUrl(endpoint, path, extraParams);
-    std::string resp = performRequest(url);
+    auto response = http_.request(url);
+    std::string resp = response.body;
     checkApiError(resp);
     auto json = nlohmann::json::parse(resp);
 
@@ -94,48 +96,10 @@ std::string YandexDiskClient::getLinkByKey(
         throw std::runtime_error(errorMsg);
 }
 
-std::string YandexDiskClient::performRequest(
-        const std::string& url,
-        const std::string& method /* = "GET" */,
-        long* http_code /* = nullptr */)
-{
-    CURL* curl = curl_easy_init();
-    std::string response;
-    if (!curl) throw std::runtime_error("curl_easy_init() failed");
-
-    struct curl_slist* headers = nullptr;
-    headers = curl_slist_append(headers, ("Authorization: OAuth " + token).c_str());
-
-    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
-
-    if (method == "PUT") {
-        curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
-    } else if (method == "DELETE") {
-        curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
-        curl_easy_setopt(curl, CURLOPT_NOBODY, 0L);
-    } else if (method == "POST") {
-        curl_easy_setopt(curl, CURLOPT_POST, 1L);
-    }
-
-    CURLcode res = curl_easy_perform(curl);
-
-    long code = 0;
-    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &code);
-    if (http_code) *http_code = code;
-
-    curl_slist_free_all(headers);
-    curl_easy_cleanup(curl);
-
-    if (res != CURLE_OK) throw std::runtime_error(curl_easy_strerror(res));
-    return response;
-}
-
 nlohmann::json YandexDiskClient::getQuotaInfo() {
     std::string url = buildUrl("https://cloud-api.yandex.net/v1/disk", {});
-    std::string resp = performRequest(url, "GET");
+    auto response = http_.request(url, "GET");
+    std::string resp = response.body;
     checkApiError(resp);
     return nlohmann::json::parse(resp);
 }
@@ -155,7 +119,8 @@ nlohmann::json YandexDiskClient::getResourceList(const std::string& disk_path /*
             path_utf8,
             ""
     );
-    std::string resp = performRequest(url);
+    auto response = http_.request(url);
+    std::string resp = response.body;
     checkApiError(resp);
     return nlohmann::json::parse(resp);
 }
@@ -185,7 +150,8 @@ std::string YandexDiskClient::getResourceInfo(const std::string& disk_path) {
             "https://cloud-api.yandex.net/v1/disk/resources",
             params);
 
-    std::string resp = performRequest(url, "GET");
+    auto response = http_.request(url, "GET");
+    std::string resp = response.body;
     checkApiError(resp);
 
     nlohmann::json info = nlohmann::json::parse(resp);
@@ -216,7 +182,8 @@ bool YandexDiskClient::publish(const std::string& path) {
             path_utf8,
             ""
     );
-    std::string resp = performRequest(url, "PUT");
+    auto response = http_.request(url, "PUT");
+    std::string resp = response.body;
     checkApiError(resp);
 
     return true;
@@ -233,7 +200,8 @@ bool YandexDiskClient::unpublish(const std::string& disk_path) {
             params
             );
 
-    std::string resp = performRequest(url, "PUT");
+    auto response = http_.request(url, "PUT");
+    std::string resp = response.body;
     checkApiError(resp);
 
     return true;
@@ -383,7 +351,8 @@ bool YandexDiskClient::downloadFile(
     std::string info_url = buildUrl(
             "https://cloud-api.yandex.net/v1/disk/resources",
             params);
-    std::string info_resp = performRequest(info_url, "GET");
+    auto response = http_.request(info_url, "GET");
+    std::string info_resp = response.body;
     checkApiError(info_resp);
     nlohmann::json meta = nlohmann::json::parse(info_resp);
 
@@ -518,7 +487,8 @@ bool YandexDiskClient::deleteFileOrDir(const std::string& disk_path) {
             ""
             );
 
-    std::string resp = performRequest(url, "DELETE");
+    auto response = http_.request(url, "DELETE");
+    std::string resp = response.body;
     checkApiError(resp);
 
     return true;
@@ -534,7 +504,8 @@ bool YandexDiskClient::createDirectory(const std::string& disk_path) {
             ""
     );
 
-    std::string resp = performRequest(url, "PUT");
+    auto response = http_.request(url, "PUT");
+    std::string resp = response.body;
     checkApiError(resp);
 
     return true;
@@ -579,7 +550,8 @@ bool YandexDiskClient::moveFileOrDir(
 
     std::string url = buildUrl("https://cloud-api.yandex.net/v1/disk/resources/move", params);
 
-    std::string resp = performRequest(url, "POST");
+    auto response = http_.request(url, "POST");
+    std::string resp = response.body;
     checkApiError(resp);
 
     return true;
@@ -605,10 +577,9 @@ bool YandexDiskClient::exists(const std::string& disk_path) {
                 params
         );
 
-        long http_code = 0;
-        std::string resp = performRequest(url, "GET", &http_code);
+        auto response = http_.request(url, "GET");
 
-        return http_code == 200;
+        return response.status_code == 200;
     } catch (const std::exception& ex) {
         return false;
     }
@@ -622,7 +593,8 @@ nlohmann::json YandexDiskClient::getTrashResourceList(const std::string& trash_p
             "https://cloud-api.yandex.net/v1/disk/trash/resources",
             params
     );
-    std::string resp = performRequest(url, "GET");
+    auto response = http_.request(url, "GET");
+    std::string resp = response.body;
     checkApiError(resp);
     return nlohmann::json::parse(resp);
 }
@@ -659,7 +631,8 @@ bool YandexDiskClient::restoreFromTrash(const std::string& trash_path) {
             "https://cloud-api.yandex.net/v1/disk/trash/resources/restore",
             params
     );
-    std::string resp = performRequest(url, "PUT");
+    auto response = http_.request(url, "PUT");
+    std::string resp = response.body;
     checkApiError(resp);
     return true;
 }
@@ -672,14 +645,16 @@ bool YandexDiskClient::deleteFromTrash(const std::string& trash_path) {
             "https://cloud-api.yandex.net/v1/disk/trash/resources",
             params
     );
-    std::string resp = performRequest(url, "DELETE");
+    auto response = http_.request(url, "DELETE");
+    std::string resp = response.body;
     checkApiError(resp);
     return true;
 }
 
 bool YandexDiskClient::emptyTrash() {
     std::string url = "https://cloud-api.yandex.net/v1/disk/trash/resources?path=";
-    std::string resp = performRequest(url, "DELETE");
+    auto response = http_.request(url, "DELETE");
+    std::string resp = response.body;
     checkApiError(resp);
     return true;
 }
