@@ -256,16 +256,6 @@ private:
             const std::string& extraParams
     );
 
-    std::string makeUploadDiskPath(
-            const std::string& upload_disk_path,
-            const std::string& local_path);
-
-    std::string makeLocalDownloadPath(
-            const std::string& download_disk_path,
-            const std::string& local_path);
-
-    std::string makeDiskPath(const std::string& disk_path);
-
     void checkApiError(const std::string& response);
 
     std::vector<std::string> findPathsByName(
