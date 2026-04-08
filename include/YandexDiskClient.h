@@ -237,27 +237,6 @@ private:
 
     std::string getDownloadUrl(const std::string& download_disk_path);
 
-    std::string getLinkByKey(
-            const std::string& path,
-            const std::string& endpoint,
-            const std::string& key,
-            const std::string& extraParams,
-            const std::string& errorMsg
-    );
-
-    std::string buildUrl(
-            const std::string& endpoint,
-            const std::map<std::string, std::string>& params
-    );
-
-    std::string buildUrl(
-            const std::string& endpoint,
-            const std::string& path,
-            const std::string& extraParams
-    );
-
-    void checkApiError(const std::string& response);
-
     std::vector<std::string> findPathsByName(
             const std::string& name,
             const std::string& start_path,
