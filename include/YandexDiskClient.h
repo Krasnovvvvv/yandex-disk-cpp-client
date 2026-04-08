@@ -28,26 +28,12 @@ public:
     nlohmann::json getQuotaInfo();
 
     /**
-     * @brief Format quota information as human-readable string.
-     * @param json JSON object from getQuotaInfo().
-     * @return Formatted string.
-     */
-    std::string formatQuotaInfo(const nlohmann::json& json);
-
-    /**
      * @brief Get list of files and folders at given path.
      * @param disk_path Path on Yandex.Disk (default: root "/").
      * @return JSON object with resource list.
      * @throws std::runtime_error on API/network error.
      */
     nlohmann::json getResourceList(const std::string& disk_path = "/");
-
-    /**
-     * @brief Format resource list as human-readable string.
-     * @param json JSON object from getResourceList().
-     * @return Formatted string.
-     */
-    std::string formatResourceList(const nlohmann::json& json);
 
     /**
      * @brief Get detailed information about a file or folder.
@@ -182,13 +168,6 @@ public:
      * @throws std::runtime_error on API/network error.
      */
     nlohmann::json getTrashResourceList(const std::string& trash_path = "trash:/");
-
-    /**
-     * @brief Format trash resource list as human-readable string.
-     * @param json JSON object from getTrashResourceList().
-     * @return Formatted string.
-     */
-    std::string formatTrashResourceList(const nlohmann::json& json);
 
     /**
      * @brief Restore a file or directory from trash to its original location.
