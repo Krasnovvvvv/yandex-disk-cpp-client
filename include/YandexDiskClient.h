@@ -215,12 +215,5 @@ private:
     std::string getUploadUrl(const std::string& upload_disk_path);
 
     std::string getDownloadUrl(const std::string& download_disk_path);
-
-    std::vector<std::string> findPathsByName(
-            const std::string& name,
-            const std::string& start_path,
-            std::function<nlohmann::json(const std::string&)> listFunc,
-            bool recursive = true);
-
 };
 #endif //YANDEX_DISK_CPP_CLIENT_YANDEXDISKCLIENT_H

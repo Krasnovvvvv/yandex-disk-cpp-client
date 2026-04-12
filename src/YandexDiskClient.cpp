@@ -3,6 +3,7 @@
 #include "PathUtils.h"
 #include "APIUtils.h"
 #include "FormatUtils.h"
+#include "SearchUtils.h"
 #include <stdexcept>
 #include <filesystem>
 #include <map>
@@ -418,42 +419,13 @@ bool YandexDiskClient::emptyTrash() {
     return true;
 }
 
-std::vector<std::string> YandexDiskClient::findPathsByName(
-        const std::string& name,
-        const std::string& start_path,
-        std::function<nlohmann::json(const std::string&)> listFunc,
-        bool recursive /* = true */)
-{
-    std::vector<std::string> results;
-    nlohmann::json resList = listFunc(start_path);
-    if (resList.contains("_embedded") && resList["_embedded"].contains("items")) {
-        for (const auto& item : resList["_embedded"]["items"]) {
-            if (item.value("name", "") == name) {
-                results.push_back(item.value("path", ""));
-            }
-            if (recursive && item.value("type", "") == "dir") {
-                auto subResults = findPathsByName(
-                        name,
-                        item.value("path", ""),
-                        listFunc,
-                        recursive);
-                results.insert(
-                        results.end(),
-                        subResults.begin(),
-                        subResults.end());
-            }
-        }
-    }
-    return results;
-}
-
 std::vector<std::string> YandexDiskClient::findTrashPathByName(const std::string& name) {
     auto listTrash =
             [this](const std::string& path) -> nlohmann::json {
         return getTrashResourceList(path);
     };
 
-    return findPathsByName(name, "/", listTrash, false);
+    return search_utils::findPathsByName(name, "/", listTrash, false);
 }
 
 std::vector<std::string> YandexDiskClient::findResourcePathByName(
@@ -464,7 +436,7 @@ std::vector<std::string> YandexDiskClient::findResourcePathByName(
         return getResourceList(path);
     };
 
-    return findPathsByName(
+    return search_utils::findPathsByName(
             name,
             start_path.empty() ? "/" : start_path,
             listDisk,
