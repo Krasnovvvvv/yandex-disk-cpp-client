@@ -5,6 +5,7 @@
 #include "FormatUtils.h"
 #include "SearchUtils.h"
 #include "DirectoryOps.h"
+#include "ResourceOps.h"
 #include <stdexcept>
 #include <filesystem>
 #include <map>
@@ -55,36 +56,12 @@ std::string YandexDiskClient::getResourceInfo(const std::string& disk_path) {
 
 bool YandexDiskClient::publish(const std::string& path) {
     const std::string path_utf8 = path_utils::makeDiskPath(path);
-    std::string url = api_utils::buildUrl(
-            "https://cloud-api.yandex.net/v1/disk/resources/publish?path=",
-            path_utf8,
-            "",
-            http_
-    );
-    auto response = http_.request(url, "PUT");
-    std::string resp = response.body;
-    api_utils::checkApiError(resp);
-
-    return true;
+    return resource_ops::publish(http_, path_utf8);
 }
 
 bool YandexDiskClient::unpublish(const std::string& disk_path) {
-
-    std::map<std::string, std::string> params = {
-            {"path", path_utils::makeDiskPath(disk_path)}
-    };
-
-    std::string url = api_utils::buildUrl(
-            "https://cloud-api.yandex.net/v1/disk/resources/unpublish",
-            params,
-            http_
-            );
-
-    auto response = http_.request(url, "PUT");
-    std::string resp = response.body;
-    api_utils::checkApiError(resp);
-
-    return true;
+    const std::string utf8_disk_path = path_utils::makeDiskPath(disk_path);
+    return resource_ops::unpublish(http_, utf8_disk_path);
 }
 
 std::string YandexDiskClient::getPublicDownloadLink(const std::string& disk_path) {
@@ -223,38 +200,13 @@ bool YandexDiskClient::downloadDirectory(
 }
 
 bool YandexDiskClient::deleteFileOrDir(const std::string& disk_path) {
-
-    std::string utf8_disk_path = path_utils::makeDiskPath(disk_path);
-
-    std::string url = api_utils::buildUrl(
-            "https://cloud-api.yandex.net/v1/disk/resources?path=",
-            utf8_disk_path,
-            "",
-            http_);
-
-    auto response = http_.request(url, "DELETE");
-    std::string resp = response.body;
-    api_utils::checkApiError(resp);
-
-    return true;
+    const std::string utf8_disk_path = path_utils::makeDiskPath(disk_path);
+    return resource_ops::deleteFileOrDir(http_, utf8_disk_path);
 }
 
 bool YandexDiskClient::createDirectory(const std::string& disk_path) {
-
-    std::string utf8_disk_path = path_utils::makeDiskPath(disk_path);
-
-    std::string url = api_utils::buildUrl(
-            "https://cloud-api.yandex.net/v1/disk/resources?path=",
-            utf8_disk_path,
-            "",
-            http_
-    );
-
-    auto response = http_.request(url, "PUT");
-    std::string resp = response.body;
-    api_utils::checkApiError(resp);
-
-    return true;
+    const std::string utf8_disk_path = path_utils::makeDiskPath(disk_path);
+    return resource_ops::createDirectory(http_, utf8_disk_path);
 }
 
 bool YandexDiskClient::moveFileOrDir(
@@ -267,29 +219,24 @@ bool YandexDiskClient::moveFileOrDir(
 
     if (to_fs.parent_path().empty()) {
         to_fs = from_fs.parent_path() / to_fs;
-    } else if (!to_fs.has_filename() || to_path.back() == '/' || to_path.back() == '\\') {
+    } else if (!to_fs.has_filename() ||
+               (!to_path.empty() &&
+                (to_path.back() == '/' || to_path.back() == '\\'))) {
         to_fs /= from_fs.filename();
-    }
+                }
 
-    std::string from_utf8 = path_utils::makeDiskPath(from_fs.string());
-    std::string to_utf8 = path_utils::makeDiskPath(to_fs.string());
+#if defined(_WIN32)
+    const std::string from_normalized = from_fs.u8string();
+    const std::string to_normalized   = to_fs.u8string();
+#else
+    const std::string from_normalized = from_fs.string();
+    const std::string to_normalized   = to_fs.string();
+#endif
 
-    std::map<std::string, std::string> params = {
-            {"from", from_utf8},
-            {"path", to_utf8}
-    };
-    if (overwrite) {
-        params["overwrite"] = "true";
-    }
+    const std::string from_utf8 = path_utils::makeDiskPath(from_normalized);
+    const std::string to_utf8   = path_utils::makeDiskPath(to_normalized);
 
-    std::string url = api_utils::buildUrl("https://cloud-api.yandex.net/v1/disk/resources/move",
-                                          params, http_);
-
-    auto response = http_.request(url, "POST");
-    std::string resp = response.body;
-    api_utils::checkApiError(resp);
-
-    return true;
+    return resource_ops::moveFileOrDir(http_, from_utf8, to_utf8, overwrite);
 }
 
 bool YandexDiskClient::renameFileOrDir(
@@ -297,9 +244,16 @@ bool YandexDiskClient::renameFileOrDir(
         const std::string& new_name,
         bool overwrite /* = false */) {
 
-    std::filesystem::path disk(disk_path);
-    std::filesystem::path dst = disk.parent_path() / new_name;
-    return moveFileOrDir(disk_path, dst.generic_string(), overwrite);
+    std::filesystem::path from_fs(disk_path);
+    std::filesystem::path dst_fs = from_fs.parent_path() / new_name;
+
+#if defined(_WIN32)
+    const std::string dst_normalized = dst_fs.u8string();
+#else
+    const std::string dst_normalized = dst_fs.string();
+#endif
+
+    return moveFileOrDir(disk_path, dst_normalized, overwrite);
 }
 
 bool YandexDiskClient::exists(const std::string& disk_path) {
@@ -337,41 +291,17 @@ nlohmann::json YandexDiskClient::getTrashResourceList(const std::string& trash_p
 }
 
 bool YandexDiskClient::restoreFromTrash(const std::string& trash_path) {
-    std::map<std::string, std::string> params = {
-            {"path", path_utils::makeDiskPath(trash_path)}
-    };
-    std::string url = api_utils::buildUrl(
-            "https://cloud-api.yandex.net/v1/disk/trash/resources/restore",
-            params,
-            http_
-    );
-    auto response = http_.request(url, "PUT");
-    std::string resp = response.body;
-    api_utils::checkApiError(resp);
-    return true;
+    const std::string path_utf8 = path_utils::makeDiskPath(trash_path);
+    return resource_ops::restoreFromTrash(http_, path_utf8);
 }
 
 bool YandexDiskClient::deleteFromTrash(const std::string& trash_path) {
-    std::map<std::string, std::string> params = {
-            {"path", path_utils::makeDiskPath(trash_path)}
-    };
-    std::string url = api_utils::buildUrl(
-            "https://cloud-api.yandex.net/v1/disk/trash/resources",
-            params,
-            http_
-    );
-    auto response = http_.request(url, "DELETE");
-    std::string resp = response.body;
-    api_utils::checkApiError(resp);
-    return true;
+    const std::string path_utf8 = path_utils::makeDiskPath(trash_path);
+    return resource_ops::deleteFromTrash(http_, path_utf8);
 }
 
 bool YandexDiskClient::emptyTrash() {
-    std::string url = "https://cloud-api.yandex.net/v1/disk/trash/resources?path=";
-    auto response = http_.request(url, "DELETE");
-    std::string resp = response.body;
-    api_utils::checkApiError(resp);
-    return true;
+    return resource_ops::emptyTrash(http_);
 }
 
 std::vector<std::string> YandexDiskClient::findTrashPathByName(const std::string& name) {
