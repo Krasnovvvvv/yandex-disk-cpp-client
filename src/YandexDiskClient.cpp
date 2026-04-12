@@ -4,6 +4,7 @@
 #include "APIUtils.h"
 #include "FormatUtils.h"
 #include "SearchUtils.h"
+#include "DirectoryOps.h"
 #include <stdexcept>
 #include <filesystem>
 #include <map>
@@ -191,34 +192,15 @@ bool YandexDiskClient::uploadDirectory(
         const std::string& disk_path,
         const std::string& local_path)
 {
-    namespace fs = std::filesystem;
-
-    if (!fs::exists(local_path) || !fs::is_directory(local_path)) {
-        throw std::runtime_error("Local directory does not exist: " + local_path);
-    }
-
-    fs::path disk_fs(disk_path);
-    fs::path local_fs(local_path);
-
-    if (disk_fs.empty() || disk_fs == "/" ||
-    !disk_fs.has_filename() ||
-    disk_path.back() == '/' ||
-    disk_path.back() == '\\') {
-        disk_fs /= local_fs.filename();
-    }
-
-    createDirectory(disk_fs.generic_string());
-
-    for (const auto& entry : fs::recursive_directory_iterator(local_fs)) {
-        fs::path rel_path = fs::relative(entry.path(), local_fs);
-        std::string disk_target = (disk_fs / rel_path).generic_string();
-
-        if (entry.is_directory()) {
-            createDirectory(disk_target);
-        } else if (entry.is_regular_file()) {
-            uploadFile(disk_target, entry.path().string());
-        }
-    }
+    directory_ops::uploadDirectory(
+        disk_path,
+        local_path,
+        [this](const std::string& remote_dir) {
+            this->createDirectory(remote_dir);
+        },
+        [this](const std::string& remote_path, const std::string& local_file) {
+            this->uploadFile(remote_path, local_file);
+        });
 
     return true;
 }
@@ -227,42 +209,15 @@ bool YandexDiskClient::downloadDirectory(
         const std::string& disk_path,
         const std::string& local_path)
 {
-    namespace fs = std::filesystem;
-
-    nlohmann::json info = getResourceList(disk_path);
-    if (!info.contains("_embedded") || !info["_embedded"].contains("items")) {
-        throw std::runtime_error("Remote directory does not exist or is not a directory: " +
-        disk_path);
-    }
-
-    fs::path local_fs(local_path);
-    fs::path disk_fs(disk_path);
-
-    if (!fs::exists(local_fs) || fs::is_directory(local_fs)) {
-        fs::path folder_name = disk_fs.filename();
-        if (folder_name.empty()) {
-            folder_name = disk_fs.parent_path().filename();
-        }
-        local_fs /= folder_name;
-    } else if (fs::exists(local_fs) && !fs::is_directory(local_fs)) {
-        throw std::runtime_error("Local path exists and is not a directory: " +
-        local_path);
-    }
-
-    fs::create_directories(local_fs);
-
-    for (const auto& item : info["_embedded"]["items"]) {
-        std::string name = item["name"].get<std::string>();
-        std::string type = item["type"].get<std::string>();
-        std::string remote_item_path = item["path"].get<std::string>();
-        fs::path local_item_path = local_fs / name;
-
-        if (type == "dir") {
-            downloadDirectory(remote_item_path, local_item_path.string());
-        } else if (type == "file") {
-            downloadFile(remote_item_path, local_item_path.string());
-        }
-    }
+    directory_ops::downloadDirectory(
+        disk_path,
+        local_path,
+        [this](const std::string& remote_dir) -> nlohmann::json {
+            return this->getResourceList(remote_dir);
+        },
+        [this](const std::string& remote_file, const std::string& local_dir) {
+            this->downloadFile(remote_file, local_dir);
+        });
 
     return true;
 }
