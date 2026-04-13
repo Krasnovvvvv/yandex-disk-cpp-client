@@ -132,18 +132,14 @@ bool YandexDiskClient::createDirectory(const std::string& disk_path) {
 bool YandexDiskClient::moveFileOrDir(
         const std::string& from_path,
         const std::string& to_path,
-        bool overwrite /* = false */
-) {
+        bool overwrite) {
     std::filesystem::path from_fs(from_path);
-    std::filesystem::path to_fs(to_path);
-
-    if (to_fs.parent_path().empty()) {
-        to_fs = from_fs.parent_path() / to_fs;
-    } else if (!to_fs.has_filename() ||
-               (!to_path.empty() &&
-                (to_path.back() == '/' || to_path.back() == '\\'))) {
-        to_fs /= from_fs.filename();
-                }
+    std::filesystem::path to_fs =
+        path_utils::resolveMoveDestination(
+            from_fs,
+            std::filesystem::path(to_path),
+            to_path
+        );
 
 #if defined(_WIN32)
     const std::string from_normalized = from_fs.u8string();
@@ -153,10 +149,12 @@ bool YandexDiskClient::moveFileOrDir(
     const std::string to_normalized   = to_fs.string();
 #endif
 
-    const std::string from_utf8 = path_utils::makeDiskPath(from_normalized);
-    const std::string to_utf8   = path_utils::makeDiskPath(to_normalized);
-
-    return resource_ops::moveFileOrDir(http_, from_utf8, to_utf8, overwrite);
+    return resource_ops::moveFileOrDir(
+        http_,
+        path_utils::makeDiskPath(from_normalized),
+        path_utils::makeDiskPath(to_normalized),
+        overwrite
+    );
 }
 
 bool YandexDiskClient::renameFileOrDir(

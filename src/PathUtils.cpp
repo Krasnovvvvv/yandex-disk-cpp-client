@@ -49,3 +49,19 @@ std::string path_utils::makeLocalDownloadPath(const std::string &download_disk_p
     return (localDir / diskFile.filename()).string();
 #endif
 }
+
+std::filesystem::path path_utils::resolveMoveDestination(const std::filesystem::path& from_fs,
+                                                         const std::filesystem::path& to_fs_input,
+                                                         const std::string& to_path_raw) {
+    std::filesystem::path to_fs = to_fs_input;
+
+    if (to_fs.parent_path().empty()) {
+        to_fs = from_fs.parent_path() / to_fs;
+    } else if (!to_fs.has_filename() ||
+               (!to_path_raw.empty() &&
+                (to_path_raw.back() == '/' || to_path_raw.back() == '\\'))) {
+        to_fs /= from_fs.filename();
+                }
+
+    return to_fs;
+}
