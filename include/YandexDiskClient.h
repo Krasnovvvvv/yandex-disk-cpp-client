@@ -7,6 +7,8 @@
 #include <filesystem>
 #include <map>
 
+#include "HttpClient.h"
+
 /**
  * @brief C++ client for Yandex.Disk REST API.
  */
@@ -26,26 +28,12 @@ public:
     nlohmann::json getQuotaInfo();
 
     /**
-     * @brief Format quota information as human-readable string.
-     * @param json JSON object from getQuotaInfo().
-     * @return Formatted string.
-     */
-    std::string formatQuotaInfo(const nlohmann::json& json);
-
-    /**
      * @brief Get list of files and folders at given path.
      * @param disk_path Path on Yandex.Disk (default: root "/").
      * @return JSON object with resource list.
      * @throws std::runtime_error on API/network error.
      */
     nlohmann::json getResourceList(const std::string& disk_path = "/");
-
-    /**
-     * @brief Format resource list as human-readable string.
-     * @param json JSON object from getResourceList().
-     * @return Formatted string.
-     */
-    std::string formatResourceList(const nlohmann::json& json);
 
     /**
      * @brief Get detailed information about a file or folder.
@@ -182,13 +170,6 @@ public:
     nlohmann::json getTrashResourceList(const std::string& trash_path = "trash:/");
 
     /**
-     * @brief Format trash resource list as human-readable string.
-     * @param json JSON object from getTrashResourceList().
-     * @return Formatted string.
-     */
-    std::string formatTrashResourceList(const nlohmann::json& json);
-
-    /**
      * @brief Restore a file or directory from trash to its original location.
      * @param trash_path Path to resource in trash (from "path" field).
      * @return true on success.
@@ -229,54 +210,10 @@ public:
             const std::string& start_path = "/");
 
 private:
-    std::string token;
-
-    std::string performRequest(const std::string& url,
-                               const std::string& method = "GET",
-                               long* http_code = nullptr);
+    HttpClient http_;
 
     std::string getUploadUrl(const std::string& upload_disk_path);
 
     std::string getDownloadUrl(const std::string& download_disk_path);
-
-    std::string getLinkByKey(
-            const std::string& path,
-            const std::string& endpoint,
-            const std::string& key,
-            const std::string& extraParams,
-            const std::string& errorMsg
-    );
-
-    std::string buildUrl(
-            const std::string& endpoint,
-            const std::map<std::string, std::string>& params
-    );
-
-    std::string buildUrl(
-            const std::string& endpoint,
-            const std::string& path,
-            const std::string& extraParams
-    );
-
-    std::string makeUploadDiskPath(
-            const std::string& upload_disk_path,
-            const std::string& local_path);
-
-    std::string makeLocalDownloadPath(
-            const std::string& download_disk_path,
-            const std::string& local_path);
-
-    std::string makeDiskPath(const std::string& disk_path);
-
-    void checkApiError(const std::string& response);
-
-    std::vector<std::string> findPathsByName(
-            const std::string& name,
-            const std::string& start_path,
-            std::function<nlohmann::json(const std::string&)> listFunc,
-            bool recursive = true);
-
 };
-
-
 #endif //YANDEX_DISK_CPP_CLIENT_YANDEXDISKCLIENT_H
