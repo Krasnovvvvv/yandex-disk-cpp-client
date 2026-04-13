@@ -1,4 +1,5 @@
 #include "YandexDiskClient.h"
+#include "FormatUtils.h"
 #include <cstdlib>
 #include <iostream>
 
@@ -21,17 +22,15 @@ int main() {
 
         // List root directory contents
         auto list = yandex.getResourceList("/");
-        std::cout << yandex.formatResourceList(list) << std::endl;
+        std::cout << format_utils::formatResourceList(list) << std::endl;
 
         // Get quota info
         auto quota = yandex.getQuotaInfo();
-        std::cout << yandex.formatQuotaInfo(quota) << std::endl;
+        std::cout << format_utils::formatQuotaInfo(quota) << std::endl;
 
     } catch (const std::exception& ex) {
         std::cerr << "Error: " << ex.what() << std::endl;
     }
-
-    return 0;
 }
 
 
