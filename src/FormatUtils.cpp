@@ -1,4 +1,5 @@
 #include "FormatUtils.h"
+#include <sstream>
 
 std::string format_utils::formatBytes(std::uint64_t bytes) {
     std::ostringstream oss;
