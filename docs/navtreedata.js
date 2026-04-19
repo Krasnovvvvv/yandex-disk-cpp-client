@@ -41,7 +41,7 @@ var NAVTREE =
 
 var NAVTREEINDEX =
 [
-"_yandex_disk_client_8h_source.html"
+"YandexDiskClient_8h_source.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronization';

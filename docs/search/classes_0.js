@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['yandexdiskclient_0',['YandexDiskClient',['../class_yandex_disk_client.html',1,'']]]
+  ['yandexdiskclient_0',['YandexDiskClient',['../classYandexDiskClient.html',1,'']]]
 ];
