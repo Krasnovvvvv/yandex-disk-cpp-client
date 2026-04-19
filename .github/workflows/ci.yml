@@ -10,8 +10,10 @@ jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
+
     steps:
       - uses: actions/checkout@v4
 
@@ -22,12 +24,26 @@ jobs:
           vcpkgDirectory: '${{ github.workspace }}/vcpkg'
           runVcpkgInstall: true
 
-      - name: Configure CMake
-        run: cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake
+      - name: Configure CMake (Windows)
+        if: runner.os == 'Windows'
+        run: >
+          cmake -B build -S .
+          -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake
+          -DBUILD_TESTS=ON
+          -DBUILD_EXAMPLES=OFF
+
+      - name: Configure CMake (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: >
+          cmake -B build -S .
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake
+          -DBUILD_TESTS=ON
+          -DBUILD_EXAMPLES=OFF
 
       - name: Build (Windows)
         if: runner.os == 'Windows'
-        run: cmake --build build
+        run: cmake --build build --config Release
         shell: pwsh
 
       - name: Build (Linux)
@@ -38,3 +54,15 @@ jobs:
         if: runner.os == 'macOS'
         run: cmake --build build -- -j$(sysctl -n hw.logicalcpu)
 
+      - name: Test (Windows)
+        if: runner.os == 'Windows'
+        run: ctest --test-dir build -C Release --output-on-failure
+        shell: pwsh
+
+      - name: Test (Linux)
+        if: runner.os == 'Linux'
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Test (macOS)
+        if: runner.os == 'macOS'
+        run: ctest --test-dir build --output-on-failure

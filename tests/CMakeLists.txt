@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.28)
+
 find_package(GTest CONFIG REQUIRED)
 include(GoogleTest)
 
@@ -12,6 +13,7 @@ add_executable(yandex-disk-cpp-client-tests
 target_link_libraries(yandex-disk-cpp-client-tests
         PRIVATE
         yandex-disk-cpp-client
+        GTest::gtest
         GTest::gtest_main
 )
 

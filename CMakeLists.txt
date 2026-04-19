@@ -9,7 +9,6 @@ option(BUILD_TESTS "Build tests" OFF)
 
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(CURL CONFIG REQUIRED)
-find_package(GTest CONFIG REQUIRED)
 
 file(GLOB SOURCES "src/*.cpp")
 
@@ -24,8 +23,6 @@ target_include_directories(yandex-disk-cpp-client
 target_link_libraries(yandex-disk-cpp-client
         PUBLIC nlohmann_json::nlohmann_json
         CURL::libcurl
-        GTest::gtest
-        GTest::gtest_main
 )
 
 # === Build each example as a separate executable ===
