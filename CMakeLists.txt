@@ -5,9 +5,11 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(BUILD_EXAMPLES "Build example executables" ON)
+option(BUILD_TESTS "Build tests" OFF)
 
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(CURL CONFIG REQUIRED)
+find_package(GTest CONFIG REQUIRED)
 
 file(GLOB SOURCES "src/*.cpp")
 
@@ -22,6 +24,8 @@ target_include_directories(yandex-disk-cpp-client
 target_link_libraries(yandex-disk-cpp-client
         PUBLIC nlohmann_json::nlohmann_json
         CURL::libcurl
+        GTest::gtest
+        GTest::gtest_main
 )
 
 # === Build each example as a separate executable ===
@@ -43,6 +47,11 @@ if(BUILD_EXAMPLES)
 
     add_executable(example_directory_upload_download examples/directory_upload_download.cpp)
     target_link_libraries(example_directory_upload_download PRIVATE yandex-disk-cpp-client)
+endif()
+
+if(BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
 endif()
 
 # === Installing a static library ===
