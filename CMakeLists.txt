@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.28)
-project(yandex-disk-cpp-client VERSION 1.0.2)
+project(yandex-disk-cpp-client VERSION 1.0.4)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-option(BUILD_EXAMPLES "Build example executables" ON)
-option(BUILD_TESTS "Build tests" OFF)
+option(BUILD_EXAMPLES "Build example executables" ${PROJECT_IS_TOP_LEVEL})
+option(BUILD_TESTS "Build tests" ${PROJECT_IS_TOP_LEVEL})
 
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(CURL CONFIG REQUIRED)
