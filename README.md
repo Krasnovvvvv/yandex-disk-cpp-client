@@ -17,46 +17,51 @@ A simple, lightweight, and efficient static library for integrating Yandex.Disk 
 
 🔥 Now available on vcpkg – install in one command!
 
-You can quickly install the library using [vcpkg](#-new-installation-via-vcpkg-is-now-available)
+You can quickly install the library using [vcpkg](#-installation-via-vcpkg)
 
 ---
 
 ## ✨ Features
 
-- **Full API Coverage:**  
-  Upload and download files and directories, manage directories, move and rename resources, handle trash operations, publish/unpublish files, and retrieve public download links
+- **Wide API Coverage:**  
+  Upload and download files and directories, manage directories, move and rename resources, handle trash operations, publish and unpublish files, and retrieve public links
 
 - **Robust File Management:**  
-  Recursive upload/download of directories, existence checks, and detailed resource information retrieval
+  Recursive upload and download of directories, existence checks, and detailed resource information retrieval
 
 - **Trash Support:**  
-  List trash contents, restore files/folders to original locations, delete individual items or empty the entire trash
+  List trash contents, restore files or folders to original locations, delete individual items, or empty the entire trash
 
 - **Search Functionality:**  
-  Find files and folders by name both on the disk and in the trash, supporting recursive search and multiple matches
+  Find files and folders by name both on the disk and in the trash, with recursive search support
 
 - **Cross-Platform Compatibility:**  
-  Works on Windows, Linux, and macOS with support for Unicode paths
+  Works on Windows, Linux, and macOS with Unicode path support
 
 - **Minimal Dependencies:**  
-  Depends only on `libcurl` for HTTP communication and `nlohmann/json` for JSON parsing
+  Uses only `libcurl` for HTTP communication and `nlohmann/json` for JSON parsing
 
 - **Easy Integration:**  
-  Provided as a static library with a clean header interface for straightforward inclusion in your projects
+  Provided as a static library with a clean public header interface for straightforward use in CMake projects
 
 ---
 
 ## 📁 Project Structure
-```
+
+```text
 yandex-disk-cpp-client/
-├── docs                     # Generated documentation via Doxygen
+├── .github/workflows/       # GitHub Actions CI
+├── cmake/                   # Package config templates
+├── docs/                    # Generated Doxygen documentation and extra docs
 ├── examples/                # Example usage programs
-├── include/                 # Public headers (YandexDiskClient.h)
-├── src/                     # Library source files (YandexDiskClient.cpp)
-├── CMakeLists.txt           # Build configuration
+├── include/                 # Public headers
+├── src/                     # Library source files
+├── tests/                   # Unit tests and test CMake configuration
+├── CMakeLists.txt           # Root build configuration
+├── vcpkg.json               # vcpkg manifest dependencies
 ├── README.md                # This file
 ├── LICENSE                  # License file
-├── .gitignore               # Git ignore rules
+└── .gitignore               # Git ignore rules
 ```
 
 ---
@@ -65,37 +70,55 @@ yandex-disk-cpp-client/
 
 ### 🛠️ Prerequisites
 
-- C++17 compatible compiler (GCC, Clang, MSVC)
+- C++17 compatible compiler
 - CMake 3.28 or newer
-- libcurl
-- nlohmann/json
-- Environment variable `YADISK_TOKEN` with your Yandex.Disk OAuth token **(full disk access)**
+- [vcpkg](https://github.com/microsoft/vcpkg)
+- Yandex.Disk OAuth token with the required permissions
+
+### 🔑 OAuth Token
+
+Set the `YADISK_TOKEN` environment variable before running examples or your own application.
+
+Detailed step-by-step instructions for registering a Yandex OAuth application and obtaining a token are available in [`docs/OAUTH_TOKEN.md`](docs/OAUTH_TOKEN.md).
 
 ### ⚡ Build and Run Example
 
 ```sh
 git clone https://github.com/Krasnovvvvv/yandex-disk-cpp-client.git
 cd yandex-disk-cpp-client
-mkdir build && cd build
-cmake ..
-cmake --build .
-./example_basic_usage
+
+cmake -B build -S . \
+  -DCMAKE_TOOLCHAIN_FILE=<path-to-vcpkg>/scripts/buildsystems/vcpkg.cmake \
+  -DBUILD_EXAMPLES=ON
+
+cmake --build build
 ```
 
-### 🔥 New! Installation via vcpkg is now available
+Then run an example executable, for example:
 
-You can now install **yandex-disk-cpp-client** directly from the official [vcpkg](https://github.com/microsoft/vcpkg) registry  
-This makes setup and integration seamless for CMake-based projects
+```sh
+./build/example_basic_usage
+```
+
+On Windows:
+
+```powershell
+.\build\Debug\example_basic_usage.exe
+```
+
+---
+
+## 📦 Installation via vcpkg
+
+You can install **yandex-disk-cpp-client** directly from the official [vcpkg](https://github.com/microsoft/vcpkg) registry.
 
 #### Install
-
-Run the following command:
 
 ```bash
 vcpkg install yandex-disk-cpp-client
 ```
 
-If you’re using a specific triplet (e.g., MinGW or Linux static), specify it explicitly:
+If you use a specific triplet:
 
 ```bash
 vcpkg install yandex-disk-cpp-client:x64-mingw-static
@@ -103,25 +126,25 @@ vcpkg install yandex-disk-cpp-client:x64-mingw-static
 
 #### Use in CMake
 
-Once installed, simply include vcpkg’s toolchain and use `find_package` to link the library:
-
 ```cmake
 find_package(yandex-disk-cpp-client CONFIG REQUIRED)
 target_link_libraries(example PRIVATE yandex-disk-cpp-client::yandex-disk-cpp-client)
 ```
 
-#### That’s it!
+#### Notes
 
-- Dependencies such as **libcurl** and **nlohmann-json** are automatically resolved by vcpkg
-- Works out of the box on Windows, Linux, and macOS
+- `libcurl` and `nlohmann-json` are resolved automatically via vcpkg
+- Works on Windows, Linux, and macOS
+- Useful both for local development and CI environments
 
 ---
 
-### 📖 Example Usage
+## 📖 Example Usage
 
 ```cpp
 #include "YandexDiskClient.h"
-#include <cstdlib> // for getenv
+#include <cstdlib>
+#include <iostream>
 
 int main() {
     const char* token = std::getenv("YADISK_TOKEN");
@@ -132,71 +155,79 @@ int main() {
 
     YandexDiskClient yandex(token);
 
-    // Upload a file
-    yandex.uploadFile("/backup/data.zip", "C:/local/data.zip");
+    auto quota = yandex.getQuotaInfo();
+    std::cout << yandex.formatQuotaInfo(quota) << std::endl;
 
-    // List root directory contents
     auto list = yandex.getResourceList("/");
     std::cout << yandex.formatResourceList(list) << std::endl;
 
     return 0;
 }
 ```
-> For more examples, see `examples/`
+
+> For more examples, see [`examples/`](examples/)
 
 ---
 
-## 🧭 API Overview
+## 🧭 API Coverage
 
-| Function                                 | Description                                               |
-|------------------------------------------|-----------------------------------------------------------|
-| `getQuotaInfo()`                         | Retrieve disk quota info (total, used, trash size)        |
-| `getResourceList(path)`                  | List files and folders at a given disk path               |
-| `getResourceInfo(path)`                  | Get detailed info about a file or folder                  |
-| `uploadFile(disk_path, local_path)`      | Upload a local file to disk                               |
-| `downloadFile(disk_path, local_path)`    | Download a file from disk to local path                   |
-| `uploadDirectory(disk_path, local_path)` | Recursively upload a directory                            |
-| `downloadDirectory(disk_path, local_path)`| Recursively download a directory                         |
-| `deleteFileOrDir(path)`                  | Delete a file or directory                                |
-| `createDirectory(path)`                  | Create a directory                                        |
-| `moveFileOrDir(from, to, overwrite)`     | Move or rename a file or directory                        |
-| `publish(path)`                          | Publish a file or folder (make public)                    |
-| `unpublish(path)`                        | Remove public access                                      |
-| `getPublicDownloadLink(path)`            | Get public download URL                                   |
-| `exists(path)`                           | Check if a file or folder exists                          |
-| `getTrashResourceList(path)`             | List contents of trash                                    |
-| `restoreFromTrash(path)`                 | Restore file/folder from trash to original location       |
-| `deleteFromTrash(path)`                  | Permanently delete from trash                             |
-| `emptyTrash()`                           | Empty the entire trash                                    |
-| `findTrashPathByName(name)`              | Find all trash items by name                              |
-| `findResourcePathByName(name, start_path)`| Find all disk items by name, recursively                 |
+| Category | Methods |
+|----------|---------|
+| Disk info | `getQuotaInfo()`, `formatQuotaInfo()` |
+| Resource listing | `getResourceList(path)`, `formatResourceList(json)`, `getResourceInfo(path)` |
+| File operations | `uploadFile(disk_path, local_path)`, `downloadFile(disk_path, local_path)` |
+| Directory operations | `createDirectory(path)`, `uploadDirectory(disk_path, local_path)`, `downloadDirectory(disk_path, local_path)` |
+| Resource management | `deleteFileOrDir(path)`, `moveFileOrDir(from, to, overwrite)`, `renameFileOrDir(path, new_name, overwrite)`, `exists(path)` |
+| Public access | `publish(path)`, `unpublish(path)`, `getPublicDownloadLink(path)` |
+| Trash operations | `getTrashResourceList(path)`, `formatTrashResourceList(json)`, `restoreFromTrash(path)`, `deleteFromTrash(path)`, `emptyTrash()` |
+| Search | `findResourcePathByName(name, start_path)`, `findTrashPathByName(name)` |
 
 ---
 
-## 📦 Dependencies
+## 🧪 Tests
 
-- [libcurl](https://curl.se/libcurl/) — for HTTP requests
-- [nlohmann/json](https://github.com/nlohmann/json) — for JSON parsing
+Unit tests are located in the [`tests/`](tests/) directory and are built through a dedicated `tests/CMakeLists.txt`.
 
-> These dependencies are automatically handled via CMake (assuming installed on your system or via package managers like vcpkg)
+To build and run tests:
+
+```sh
+cmake -B build -S . \
+  -DCMAKE_TOOLCHAIN_FILE=<path-to-vcpkg>/scripts/buildsystems/vcpkg.cmake \
+  -DBUILD_TESTS=ON \
+  -DBUILD_EXAMPLES=OFF
+
+cmake --build build
+ctest --test-dir build --output-on-failure
+```
 
 ---
 
 ## 📚 Documentation
 
-Full API documentation is generated using Doxygen and available in the `docs/` folder  
-You can also access the online documentation via GitHub Pages [![Documentation](https://img.shields.io/badge/docs-online-blue)](https://Krasnovvvvv.github.io/yandex-disk-cpp-client/)
+API documentation is generated with Doxygen and published from the `docs/` directory.
+
+Online documentation:
+[![Documentation](https://img.shields.io/badge/docs-online-blue)](https://Krasnovvvvv.github.io/yandex-disk-cpp-client/)
+
+---
+
+## 📦 Dependencies
+
+- [libcurl](https://curl.se/libcurl/) — HTTP requests
+- [nlohmann/json](https://github.com/nlohmann/json) — JSON parsing
+- [GoogleTest](https://github.com/google/googletest) — unit tests only
+
+If you use vcpkg manifest mode, dependencies are installed automatically from `vcpkg.json`.
 
 ---
 
 ## 🤝 Contribution
 
-Contributions, bug reports, and feature requests are welcome!  
-Please open issues or pull requests on the GitHub repository
+Contributions, bug reports, and feature requests are welcome.  
+Please open an issue or submit a pull request.
 
 ---
 
 ## 📝 License
 
-This project is licensed under the MIT License — see [![License](https://img.shields.io/github/license/Krasnovvvvv/yandex-disk-cpp-client)](LICENSE)
-
+This project is licensed under the MIT License — see [LICENSE](LICENSE)
