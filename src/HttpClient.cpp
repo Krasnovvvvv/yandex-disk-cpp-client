@@ -43,7 +43,7 @@ HttpResponse HttpClient::request(const std::string &url, const std::string &meth
 
 void HttpClient::uploadFileByUrl(const std::string &url, const std::string &local_path) const {
 #if defined(_WIN32)
-    FILE* file = _wfopen(std::filesystem::path(local_path).wstring().c_str(), L"rb");
+    FILE* file = _wfopen(std::filesystem::u8path(local_path).wstring().c_str(), L"rb");
 #else
     FILE* file = fopen(local_path.c_str(), "rb");
 #endif
@@ -85,7 +85,7 @@ void HttpClient::uploadFileByUrl(const std::string &url, const std::string &loca
 
 void HttpClient::downloadToFile(const std::string &url, const std::string &local_path) const {
 #if defined(_WIN32)
-    FILE* file = _wfopen(std::filesystem::path(local_path).wstring().c_str(), L"wb");
+    FILE* file = _wfopen(std::filesystem::u8path(local_path).wstring().c_str(), L"wb");
 #else
     FILE* file = fopen(local_path.c_str(), "wb");
 #endif
